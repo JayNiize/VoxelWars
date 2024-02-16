@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad1e6952ae9652f448f1725aabbc8a2b, type: 3}
+  m_Name: Scar
+  m_EditorClassIdentifier: 
+  weaponName: Scar
+  weaponDamage: 10
+  weaponScopeStrength: 2
+  weaponReachRadius: 100
+  weaponSpeed: 0.1
+  weaponPrefab: {fileID: 5876634647976788333, guid: aff95aa443c29ed43ae283f34f428262,
+    type: 3}
+  weaponRarity: 3
