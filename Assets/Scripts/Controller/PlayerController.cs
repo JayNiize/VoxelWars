@@ -2,11 +2,13 @@ using Cinemachine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
+using UnityEditor.Timeline.Actions;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Windows;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : NetworkBehaviour
 {
     [Header("Player Properties")]
     [SerializeField] private float playerSpeed = 5f;
@@ -25,10 +27,8 @@ public class PlayerController : MonoBehaviour
     private Rigidbody rb;
     private Transform cam;
     private WeaponController weaponController;
+    private Animator anim;
     [SerializeField] private PlayerPickup playerPickup;
-
-    [Header("Animation")]
-    [SerializeField] private Animator anim;
 
     // STATE HANDLING
     private Vector2 moveInput;
@@ -45,11 +45,20 @@ public class PlayerController : MonoBehaviour
 
     private float _cinemachineTargetPitch;
 
-    private void Awake()
+    public override void OnNetworkSpawn()
+    {
+        if (!IsOwner)
+        {
+            this.enabled = false;
+        }
+    }
+
+    private void Start()
     {
         rb = GetComponent<Rigidbody>();
         cam = Camera.main.transform;
         weaponController = GetComponent<WeaponController>();
+        anim = GetComponentInChildren<Animator>();
 
         moveAction = playerInput.FindAction("Move");
         moveAction.started += OnMovementStarted;
@@ -68,11 +77,8 @@ public class PlayerController : MonoBehaviour
         actionAction = playerInput.FindAction("Action");
         actionAction.started += OnActionStarted;
         actionAction.canceled += OnActionStopped;
-    }
-
-    private void Start()
-    {
         Cursor.lockState = CursorLockMode.Locked;
+        CameraManager.Instance.RegisterPlayer(cinemachineCameraTarget);
     }
 
     private void Update()

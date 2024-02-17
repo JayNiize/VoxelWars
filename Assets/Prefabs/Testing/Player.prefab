@@ -236,10 +236,14 @@ GameObject:
   m_Component:
   - component: {fileID: 4082509314408067759}
   - component: {fileID: 4145086179752035250}
+  - component: {fileID: -812071583008205186}
   - component: {fileID: 4378698480027246444}
   - component: {fileID: 8319252972439055503}
   - component: {fileID: 6058944653952003486}
   - component: {fileID: 1062951911513305147}
+  - component: {fileID: 686918026097264247}
+  - component: {fileID: 7004274285449765566}
+  - component: {fileID: 6458969438254157182}
   m_Layer: 3
   m_Name: Player
   m_TagString: Untagged
@@ -296,6 +300,27 @@ MonoBehaviour:
   m_DefaultActionMap: Player
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
+--- !u!114 &-812071583008205186
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6589018977084583268}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 2432155674
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
 --- !u!114 &4378698480027246444
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -313,8 +338,7 @@ MonoBehaviour:
   playerInput: {fileID: -944628639613478452, guid: 3a1c17bf092c2b142948154600acd714,
     type: 3}
   playerPickup: {fileID: 7207529283796913305}
-  anim: {fileID: 7864830922986966704}
-  cinemachineCameraTarget: {fileID: 0}
+  cinemachineCameraTarget: {fileID: 2155950776404673216}
 --- !u!54 &8319252972439055503
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -378,6 +402,68 @@ MonoBehaviour:
   OnCurrentHealthChange:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &686918026097264247
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6589018977084583268}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e76078265e8fe8a438de661c3853dda5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weaponParent: {fileID: 1864585554744985117}
+--- !u!114 &7004274285449765566
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6589018977084583268}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6bb0d2ea8c7774b468b606d84ecdf01d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  OnItemAddedToInventory:
+    m_PersistentCalls:
+      m_Calls: []
+  OnItemRemovedInventory:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &6458969438254157182
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6589018977084583268}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df2868252ab5c4d1da357e8f11f1b524, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  UseUnreliableDeltas: 0
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 1
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &7284205017585747767
 GameObject:
   m_ObjectHideFlags: 0

@@ -32,6 +32,12 @@ public class CameraManager : MonoBehaviour
         thirdPersonCamera.gameObject.SetActive(!isActive);
     }
 
+    public void RegisterPlayer(Transform target)
+    {
+        aimCamera.Follow = target;
+        thirdPersonCamera.Follow = target;
+    }
+
     public Camera GetMainCamera()
     {
         return Camera.main;

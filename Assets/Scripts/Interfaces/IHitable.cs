@@ -4,5 +4,5 @@ using UnityEngine;
 
 public interface IHitable
 {
-    public void Hit(int damage, Transform hitSource);
+    public void Hit(int damage, string sourcePlayerId);
 }

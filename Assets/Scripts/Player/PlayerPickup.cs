@@ -1,17 +1,24 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
-public class PlayerPickup : MonoBehaviour
+public class PlayerPickup : NetworkBehaviour
 {
-    private WeaponController weaponController;
     private InventoryController inventoryController;
     private List<GameObject> pickupables = new List<GameObject>();
 
     private void Awake()
     {
-        weaponController = GetComponentInParent<WeaponController>();
         inventoryController = GetComponentInParent<InventoryController>();
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        if (!IsOwner)
+        {
+            Destroy(this);
+        }
     }
 
     private void OnTriggerEnter(Collider other)

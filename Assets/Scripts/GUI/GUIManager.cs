@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
-public class GUIManager : MonoBehaviour
+public class GUIManager : NetworkBehaviour
 {
     [SerializeField] private GUIHealthbar healthbar;
     [SerializeField] private GUIInventory inventory;
@@ -18,6 +19,11 @@ public class GUIManager : MonoBehaviour
         {
             Instance = this;
         }
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        Debug.Log("GUI MANAGER");
     }
 
     public void RegisterPlayer(Player player)

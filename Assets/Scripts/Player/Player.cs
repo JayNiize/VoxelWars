@@ -1,9 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class Player : MonoBehaviour, IHealth, IHitable
+public class Player : NetworkBehaviour, IHealth, IHitable
 {
     private int maxHealth = 100;
 
@@ -17,6 +18,8 @@ public class Player : MonoBehaviour, IHealth, IHitable
 
     public UnityEvent<int, int> OnCurrentHealthChange = new UnityEvent<int, int>();
 
+    private NetworkObject networkObject;
+
     public static Player Instance;
 
     private void Awake()
@@ -26,6 +29,16 @@ public class Player : MonoBehaviour, IHealth, IHitable
             Instance = this;
         }
         CurrentHealth = MaxHealth;
+        networkObject = GetComponent<NetworkObject>();
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        gameObject.layer = IsOwner ? 3 : 7;
+        if (!IsOwner)
+        {
+            this.enabled = false;
+        }
     }
 
     private void Start()
@@ -44,12 +57,12 @@ public class Player : MonoBehaviour, IHealth, IHitable
         CurrentHealth -= health;
         if (CurrentHealth <= 0)
         {
-            Debug.Log("you deeead boiii :(");
+            networkObject.Despawn();
         }
     }
 
-    public void Hit(int damage, Transform hitSource)
+    public void Hit(int damage, string sourcePlayerId)
     {
-        throw new System.NotImplementedException();
+        RemoveHealth(damage);
     }
 }

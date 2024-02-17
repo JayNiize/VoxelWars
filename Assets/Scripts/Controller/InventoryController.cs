@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class InventoryController : MonoBehaviour
+public class InventoryController : NetworkBehaviour
 {
     private WeaponController weaponController;
     private Dictionary<WeaponSO, int> weaponInventory = new Dictionary<WeaponSO, int>();
@@ -14,6 +16,14 @@ public class InventoryController : MonoBehaviour
     private void Awake()
     {
         weaponController = GetComponent<WeaponController>();
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        if (!IsOwner)
+        {
+            this.enabled = false;
+        }
     }
 
     private void Start()

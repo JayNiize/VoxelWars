@@ -20,7 +20,7 @@ public class WorldEntity : MonoBehaviour, IHitable, IHealth
         CurrentHealth = MaxHealth;
     }
 
-    public void Hit(int damage, Transform hitSource)
+    public void Hit(int damage, string sourcePlayerId)
     {
         RemoveHealth(damage);
     }

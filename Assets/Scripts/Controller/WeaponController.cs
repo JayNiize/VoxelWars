@@ -2,9 +2,10 @@ using DG.Tweening;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
-public class WeaponController : MonoBehaviour
+public class WeaponController : NetworkBehaviour
 {
     private const float BULLET_TRAIL_TIME = 0.1f;
     [SerializeField] private Transform weaponParent;
@@ -15,8 +16,16 @@ public class WeaponController : MonoBehaviour
     { get { return currentWeapon; } }
 
     private Vector2 screenCenter = new Vector2(Screen.width / 2f, Screen.height / 2f);
-    private float tempShootingDuration;
+    private float tempShootingDuration = 99999f;
     private WorldWeaponInHand currentWeaponWorld;
+
+    public override void OnNetworkSpawn()
+    {
+        if (!IsOwner)
+        {
+            this.enabled = false;
+        }
+    }
 
     public void EquipWeapon(WeaponSO weaponSO)
     {
@@ -48,26 +57,10 @@ public class WeaponController : MonoBehaviour
             tempShootingDuration += Time.deltaTime;
             if (tempShootingDuration >= currentWeapon.weaponSpeed)
             {
-                Debug.Log($"{currentWeapon.weaponName} is shooting");
                 tempShootingDuration = 0;
                 Ray ray = Camera.main.ScreenPointToRay(screenCenter);
-                RaycastHit hit;
-                Instantiate(PrefabManager.Instance.ParticlesShooting, currentWeaponWorld.GetMuzzlePosition(), Quaternion.LookRotation(ray.direction, Vector3.up));
-                if (Physics.Raycast(ray, out hit, Mathf.Infinity, ~LayerMask.GetMask("Player")))
-                {
-                    Transform bulletTrail = Instantiate(PrefabManager.Instance.TrailBullet, currentWeaponWorld.GetMuzzlePosition(), Quaternion.identity).transform;
-                    bulletTrail.DOMove(hit.point, BULLET_TRAIL_TIME);
-                    Instantiate(PrefabManager.Instance.ParticlesHit, hit.point, Quaternion.identity);
-                    if (hit.transform.TryGetComponent<IHitable>(out IHitable hitable))
-                    {
-                        hitable.Hit(currentWeapon.weaponDamage, transform);
-                    }
-                }
-                else
-                {
-                    Transform bulletTrail = Instantiate(PrefabManager.Instance.TrailBullet, currentWeaponWorld.GetMuzzlePosition(), Quaternion.identity).transform;
-                    bulletTrail.DOMove(ray.GetPoint(50f), BULLET_TRAIL_TIME);
-                }
+                Vector3 muzzlePos = currentWeaponWorld.GetMuzzlePosition();
+                RequestShootServerRpc(ray, muzzlePos, currentWeapon.weaponDamage, "JD");
             }
         }
     }
@@ -75,5 +68,32 @@ public class WeaponController : MonoBehaviour
     internal bool HasWeaponEquipped()
     {
         return currentWeapon != null;
+    }
+
+    [ServerRpc]
+    private void RequestShootServerRpc(Ray ray, Vector3 muzzlePos, int damage, string sourcePlayerId)
+    {
+        ShootClientRpc(ray, muzzlePos, damage, sourcePlayerId);
+    }
+
+    [ClientRpc]
+    private void ShootClientRpc(Ray ray, Vector3 muzzlePos, int damage, string sourcePlayerId)
+    {
+        Instantiate(PrefabManager.Instance.ParticlesShooting, muzzlePos, Quaternion.LookRotation(ray.direction, Vector3.up));
+        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, ~LayerMask.GetMask("Player")))
+        {
+            Transform bulletTrail = Instantiate(PrefabManager.Instance.TrailBullet, muzzlePos, Quaternion.identity).transform;
+            bulletTrail.DOMove(hit.point, BULLET_TRAIL_TIME);
+            Instantiate(PrefabManager.Instance.ParticlesHit, hit.point, Quaternion.identity);
+            if (hit.transform.TryGetComponent(out IHitable hitable))
+            {
+                hitable.Hit(damage, sourcePlayerId);
+            }
+        }
+        else
+        {
+            Transform bulletTrail = Instantiate(PrefabManager.Instance.TrailBullet, muzzlePos, Quaternion.identity).transform;
+            bulletTrail.DOMove(ray.GetPoint(50f), BULLET_TRAIL_TIME);
+        }
     }
 }
