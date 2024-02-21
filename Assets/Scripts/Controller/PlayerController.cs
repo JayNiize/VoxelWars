@@ -21,6 +21,7 @@ public class PlayerController : MonoBehaviour
     private InputAction lookAction;
     private InputAction aimAction;
     private InputAction actionAction;
+    private InputAction switchWeaponAction;
 
     private Rigidbody rb;
     private Transform cam;
@@ -68,6 +69,10 @@ public class PlayerController : MonoBehaviour
         actionAction = playerInput.FindAction("Action");
         actionAction.started += OnActionStarted;
         actionAction.canceled += OnActionStopped;
+
+        switchWeaponAction = playerInput.FindAction("SwitchWeapon");
+        switchWeaponAction.started += OnSwitchWeaponStarted;
+        switchWeaponAction.canceled += OnSwitchWeaponStopped;
     }
 
     private void Start()
@@ -151,11 +156,21 @@ public class PlayerController : MonoBehaviour
     {
     }
 
+    private void OnSwitchWeaponStarted(InputAction.CallbackContext ctx)
+    {
+        weaponController.SwitchWeapon(switchWeaponAction.ReadValue<float>());
+    }
+
+    private void OnSwitchWeaponStopped(InputAction.CallbackContext ctx)
+    {
+    }
+
     private void OnAimStarted(InputAction.CallbackContext ctx)
     {
         if (weaponController.HasWeaponEquipped())
         {
             CameraManager.Instance.SetAimCamera(true, weaponController.CurrentWeapon.weaponScopeStrength);
+            GUIManager.Instance.WeaponScope.ShowScope(weaponController.CurrentWeapon.weaponScopeImage);
         }
     }
 
@@ -164,6 +179,7 @@ public class PlayerController : MonoBehaviour
         if (weaponController.HasWeaponEquipped())
         {
             CameraManager.Instance.SetAimCamera(false, 0);
+            GUIManager.Instance.WeaponScope.HideScope();
         }
     }
 

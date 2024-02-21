@@ -43,4 +43,9 @@ public class WorldWeapon : MonoBehaviour, IPickupable
     {
         infoPanel.Hide();
     }
+
+    public void ExecuteAction()
+    {
+        throw new System.NotImplementedException();
+    }
 }

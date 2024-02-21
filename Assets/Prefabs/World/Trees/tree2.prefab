@@ -95,7 +95,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   destroyedPrefab: {fileID: 0}
-  maxHealth: 20
+  maxHealth: 250
 --- !u!65 &2845915447871618221
 BoxCollider:
   m_ObjectHideFlags: 0

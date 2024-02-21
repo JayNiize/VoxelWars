@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -22,5 +23,10 @@ public class GUIInventorySlot : MonoBehaviour
     {
         isActiveSlot = !isActiveSlot;
         return isActiveSlot;
+    }
+
+    internal void SetAmmoLabel(int ammo)
+    {
+        labelAmmo.text = ammo.ToString() + "x";
     }
 }

@@ -14,9 +14,18 @@ public class WeaponController : MonoBehaviour
     public WeaponSO CurrentWeapon
     { get { return currentWeapon; } }
 
+    private int currentWeaponSlotIndex;
+
     private Vector2 screenCenter = new Vector2(Screen.width / 2f, Screen.height / 2f);
     private float tempShootingDuration;
     private WorldWeaponInHand currentWeaponWorld;
+    private InventoryController inventoryController;
+    private InventorySlot currentSlot;
+
+    private void Start()
+    {
+        inventoryController = GetComponent<InventoryController>();
+    }
 
     public void EquipWeapon(WeaponSO weaponSO)
     {
@@ -26,6 +35,12 @@ public class WeaponController : MonoBehaviour
             {
                 Destroy(weaponParent.GetChild(i).gameObject);
             }
+        }
+
+        if (weaponSO == null)
+        {
+            currentWeapon = null;
+            return;
         }
         GameObject go = Instantiate(weaponSO.weaponPrefab, weaponParent.transform);
 
@@ -48,7 +63,12 @@ public class WeaponController : MonoBehaviour
             tempShootingDuration += Time.deltaTime;
             if (tempShootingDuration >= currentWeapon.weaponSpeed)
             {
-                Debug.Log($"{currentWeapon.weaponName} is shooting");
+                if (currentSlot.Ammo <= 0)
+                {
+                    Debug.Log("No ammo");
+                    return;
+                }
+                currentSlot.Ammo--;
                 tempShootingDuration = 0;
                 Ray ray = Camera.main.ScreenPointToRay(screenCenter);
                 RaycastHit hit;
@@ -60,6 +80,7 @@ public class WeaponController : MonoBehaviour
                     Instantiate(PrefabManager.Instance.ParticlesHit, hit.point, Quaternion.identity);
                     if (hit.transform.TryGetComponent<IHitable>(out IHitable hitable))
                     {
+                        GUIManager.Instance.ScreenActions.SpawnDamageLabel(hit.point, currentWeapon.weaponDamage.ToString());
                         hitable.Hit(currentWeapon.weaponDamage, transform);
                     }
                 }
@@ -75,5 +96,23 @@ public class WeaponController : MonoBehaviour
     internal bool HasWeaponEquipped()
     {
         return currentWeapon != null;
+    }
+
+    internal void SwitchWeapon(float v)
+    {
+        currentWeaponSlotIndex += (v < 0) ? 1 : -1;
+
+        if (currentWeaponSlotIndex >= inventoryController.GetInventorySize())
+        {
+            currentWeaponSlotIndex = 0;
+        }
+
+        if (currentWeaponSlotIndex < 0)
+        {
+            currentWeaponSlotIndex = inventoryController.GetInventorySize() - 1;
+        }
+        inventoryController.SetCurrentSlotIndex(currentWeaponSlotIndex);
+        currentSlot = inventoryController.GetSlotById(currentWeaponSlotIndex);
+        EquipWeapon(currentSlot.Weapon);
     }
 }

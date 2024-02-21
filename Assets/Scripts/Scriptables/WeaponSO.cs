@@ -12,6 +12,7 @@ public class WeaponSO : ScriptableObject
     public float weaponSpeed;
     public GameObject weaponPrefab;
     public WeaponRarity weaponRarity;
+    public Sprite weaponScopeImage;
 
     public Color GetWeaponColor()
     {

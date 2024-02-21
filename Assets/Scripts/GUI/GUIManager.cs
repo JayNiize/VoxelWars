@@ -6,6 +6,15 @@ public class GUIManager : MonoBehaviour
 {
     [SerializeField] private GUIHealthbar healthbar;
     [SerializeField] private GUIInventory inventory;
+    [SerializeField] private GUIScreenActions screenActions;
+
+    public GUIScreenActions ScreenActions
+    { get { return screenActions; } }
+
+    [SerializeField] private GUIWeaponScope weaponScope;
+
+    public GUIWeaponScope WeaponScope
+    { get { return weaponScope; } }
 
     private Player player;
     private InventoryController inventoryController;
@@ -31,5 +40,6 @@ public class GUIManager : MonoBehaviour
         this.inventoryController = controller;
         this.inventoryController.OnItemAddedToInventory.AddListener(inventory.UpdateInventory);
         this.inventoryController.OnItemRemovedInventory.AddListener(inventory.UpdateInventory);
+        this.inventoryController.OnInventorySlotChanged.AddListener(inventory.UpdateInventorySlots);
     }
 }
