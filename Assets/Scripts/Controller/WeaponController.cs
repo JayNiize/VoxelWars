@@ -14,7 +14,7 @@ public class WeaponController : MonoBehaviour
     public WeaponSO CurrentWeapon
     { get { return currentWeapon; } }
 
-    private int currentWeaponSlotIndex;
+    private int currentWeaponSlotIndex = 0;
 
     private Vector2 screenCenter = new Vector2(Screen.width / 2f, Screen.height / 2f);
     private float tempShootingDuration;
@@ -80,8 +80,10 @@ public class WeaponController : MonoBehaviour
                     Instantiate(PrefabManager.Instance.ParticlesHit, hit.point, Quaternion.identity);
                     if (hit.transform.TryGetComponent<IHitable>(out IHitable hitable))
                     {
-                        GUIManager.Instance.ScreenActions.SpawnDamageLabel(hit.point, currentWeapon.weaponDamage.ToString());
-                        hitable.Hit(currentWeapon.weaponDamage, transform);
+                        bool isCritialHit = CalculateCriticalHit();
+                        int damage = (int)(currentWeapon.GetWeaponDamage() * (isCritialHit ? 1.2f : 1f));
+                        GUIManager.Instance.ScreenActions.SpawnDamageLabel(hit.point, damage.ToString(), isCritialHit);
+                        hitable.Hit(damage, transform);
                     }
                 }
                 else
@@ -93,24 +95,34 @@ public class WeaponController : MonoBehaviour
         }
     }
 
+    private bool CalculateCriticalHit()
+    {
+        int critNumber = UnityEngine.Random.Range(0, 1000);
+        return critNumber < 50;
+    }
+
     internal bool HasWeaponEquipped()
     {
         return currentWeapon != null;
     }
 
-    internal void SwitchWeapon(float v)
+    internal void SwitchWeapon(float v, bool onPickup = false)
     {
-        currentWeaponSlotIndex += (v < 0) ? 1 : -1;
-
-        if (currentWeaponSlotIndex >= inventoryController.GetInventorySize())
+        if (!onPickup)
         {
-            currentWeaponSlotIndex = 0;
+            currentWeaponSlotIndex += (v < 0) ? 1 : -1;
+
+            if (currentWeaponSlotIndex >= inventoryController.GetInventorySize())
+            {
+                currentWeaponSlotIndex = 0;
+            }
+
+            if (currentWeaponSlotIndex < 0)
+            {
+                currentWeaponSlotIndex = inventoryController.GetInventorySize() - 1;
+            }
         }
 
-        if (currentWeaponSlotIndex < 0)
-        {
-            currentWeaponSlotIndex = inventoryController.GetInventorySize() - 1;
-        }
         inventoryController.SetCurrentSlotIndex(currentWeaponSlotIndex);
         currentSlot = inventoryController.GetSlotById(currentWeaponSlotIndex);
         EquipWeapon(currentSlot.Weapon);

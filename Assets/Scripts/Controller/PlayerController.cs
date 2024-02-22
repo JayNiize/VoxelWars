@@ -149,7 +149,7 @@ public class PlayerController : MonoBehaviour
 
     private void OnActionStarted(InputAction.CallbackContext ctx)
     {
-        playerPickup.Pickup();
+        playerPickup.ExecuteAction();
     }
 
     private void OnActionStopped(InputAction.CallbackContext ctx)

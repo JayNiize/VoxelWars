@@ -6,7 +6,7 @@ public class PlayerPickup : MonoBehaviour
 {
     private WeaponController weaponController;
     private InventoryController inventoryController;
-    private List<GameObject> pickupables = new List<GameObject>();
+    private List<GameObject> actionables = new List<GameObject>();
 
     private void Awake()
     {
@@ -16,39 +16,36 @@ public class PlayerPickup : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.TryGetComponent(out IPickupable pickupable))
+        if (other.TryGetComponent(out IActionable actionable))
         {
-            pickupable.ShowPickupInfo();
-            if (!pickupables.Contains(other.gameObject))
+            actionable.ShowActionInfo();
+            if (!actionables.Contains(other.gameObject))
             {
-                pickupables.Add(other.gameObject);
+                actionables.Add(other.gameObject);
             }
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.TryGetComponent(out IPickupable pickupable))
+        if (other.TryGetComponent(out IActionable pickupable))
         {
-            pickupable.HidePickupInfo();
-            if (pickupables.Contains(other.gameObject))
+            pickupable.HideActionInfo();
+            if (actionables.Contains(other.gameObject))
             {
-                pickupables.Remove(other.gameObject);
+                actionables.Remove(other.gameObject);
             }
         }
     }
 
-    public void Pickup()
+    public void ExecuteAction()
     {
-        if (pickupables.Count > 0)
+        if (actionables.Count > 0)
         {
-            GameObject pickupable = pickupables[0];
-            pickupables.Remove(pickupable);
-            //OLD
+            GameObject pickupable = actionables[0];
+            actionables.Remove(pickupable);
 
-            //NEW
-            inventoryController.AddToInventory(pickupable.GetComponent<WorldWeapon>().GetWeaponInformation(), 30);
-            Destroy(pickupable);
+            pickupable.GetComponent<IActionable>().ExecuteAction();
         }
     }
 }

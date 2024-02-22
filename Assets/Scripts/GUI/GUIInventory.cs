@@ -34,7 +34,7 @@ public class GUIInventory : MonoBehaviour
         int index = 0;
         foreach (InventorySlot slot in inventorySlots.Where(x => x.Weapon != null).ToList())
         {
-            guiInventorySlots[index].SetSlotData(AssetPreview.GetMiniThumbnail(slot.Weapon.weaponPrefab), slot.Ammo);
+            guiInventorySlots[index].SetSlotData(slot.Weapon, slot.Ammo);
             index++;
         }
     }
@@ -47,12 +47,12 @@ public class GUIInventory : MonoBehaviour
             {
                 guiActiveInventorySlot = guiInventorySlots[i];
                 inventorySlots[i].OnAmmoChanged.AddListener(UpdateAmmoLabel);
-                guiInventorySlots[i].transform.DOScale(1.1f, 0.1f).SetEase(Ease.OutCirc);
+                guiInventorySlots[i].SetActiveSlot(true);
             }
             else
             {
                 inventorySlots[i].OnAmmoChanged.RemoveAllListeners();
-                guiInventorySlots[i].transform.DOScale(1f, 0.1f).SetEase(Ease.OutCirc);
+                guiInventorySlots[i].SetActiveSlot(false);
             }
         }
     }

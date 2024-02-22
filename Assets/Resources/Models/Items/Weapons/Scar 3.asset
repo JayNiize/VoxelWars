@@ -10,14 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ad1e6952ae9652f448f1725aabbc8a2b, type: 3}
-  m_Name: Sniper
+  m_Name: Scar 3
   m_EditorClassIdentifier: 
-  weaponName: Sniper
-  weaponDamage: 30
-  weaponScopeStrength: 8
-  weaponReachRadius: 400
-  weaponSpeed: 3
-  weaponPrefab: {fileID: 8612382573376994606, guid: 5b85d6041e7d47b448639aec7d58ef8b,
+  weaponName: Legendary Scar
+  weaponDamage: 100
+  weaponScopeStrength: 2
+  weaponReachRadius: 100
+  weaponSpeed: 0.1
+  weaponPrefab: {fileID: 5876634647976788333, guid: aff95aa443c29ed43ae283f34f428262,
     type: 3}
-  weaponRarity: 4
-  weaponScopeImage: {fileID: 21300000, guid: d532bceb55e323348ac6ddf54da4b9d4, type: 3}
+  weaponRarity: 2
+  weaponScopeImage: {fileID: 0}
+  weaponPreviewImage: {fileID: 21300000, guid: f6b41bb5a5e48ea4ebec0184dba27716, type: 3}

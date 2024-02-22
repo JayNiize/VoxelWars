@@ -18,7 +18,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1074747400557239036
 RectTransform:
   m_ObjectHideFlags: 0
@@ -667,10 +667,6 @@ MonoBehaviour:
   weaponSO: {fileID: 11400000, guid: a18142a95c58e824985d4f5e93da2b0a, type: 2}
   muzzleTransform: {fileID: 1697243054548058604}
   meshTransform: {fileID: 8412355560835061452}
-  weaponInfoCanvas: {fileID: 1580049642203631346}
-  labelName: {fileID: 2424397441836357625}
-  panel: {fileID: 1577714667249258958}
-  labelActionKey: {fileID: 7679152673266548899}
 --- !u!65 &2779193483721064603
 BoxCollider:
   m_ObjectHideFlags: 0

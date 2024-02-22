@@ -12,11 +12,12 @@ public class GUIScreenActions : MonoBehaviour
 
     [SerializeField] private GameObject damageAmountLabel;
 
-    public void SpawnDamageLabel(Vector3 hitpoint, string text)
+    public void SpawnDamageLabel(Vector3 hitpoint, string text, bool isCritialHit)
     {
         Vector3 spawnSpoint = CameraManager.Instance.GetMainCamera().WorldToScreenPoint(hitpoint) + new Vector3(Random.Range(-OFFSET_X, OFFSET_X), Random.Range(-OFFSET_Y, OFFSET_Y), 0);
         TextMeshProUGUI damageLabel = Instantiate(damageAmountLabel, spawnSpoint, Quaternion.identity, transform).GetComponent<TextMeshProUGUI>();
         damageLabel.text = text;
+        damageLabel.color = isCritialHit ? Color.yellow : Color.white;
         Transform t = damageLabel.transform;
 
         t.localScale = Vector3.zero;

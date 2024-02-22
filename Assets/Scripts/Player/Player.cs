@@ -17,6 +17,13 @@ public class Player : MonoBehaviour, IHealth, IHitable
 
     public UnityEvent<int, int> OnCurrentHealthChange = new UnityEvent<int, int>();
 
+    private InventoryController inventoryController;
+    public InventoryController InventoryController
+    { get { return inventoryController; } }
+    private WeaponController weaponController;
+    public WeaponController WeaponController
+    { get { return weaponController; } }
+
     public static Player Instance;
 
     private void Awake()
@@ -26,6 +33,8 @@ public class Player : MonoBehaviour, IHealth, IHitable
             Instance = this;
         }
         CurrentHealth = MaxHealth;
+        inventoryController = GetComponent<InventoryController>();
+        weaponController = GetComponent<WeaponController>();
     }
 
     private void Start()

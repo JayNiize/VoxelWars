@@ -14,8 +14,11 @@ public class GUIWeaponScope : MonoBehaviour
 
     internal void ShowScope(Sprite weaponScopeImage)
     {
-        this.weaponScopeImage.sprite = weaponScopeImage;
-        this.weaponScopeImage.gameObject.SetActive(true);
+        if (weaponScopeImage != null)
+        {
+            this.weaponScopeImage.sprite = weaponScopeImage;
+            this.weaponScopeImage.gameObject.SetActive(true);
+        }
     }
 
     internal void HideScope()

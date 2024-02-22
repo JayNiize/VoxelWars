@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,6 +14,7 @@ public class WeaponSO : ScriptableObject
     public GameObject weaponPrefab;
     public WeaponRarity weaponRarity;
     public Sprite weaponScopeImage;
+    public Sprite weaponPreviewImage;
 
     public Color GetWeaponColor()
     {
@@ -37,6 +39,30 @@ public class WeaponSO : ScriptableObject
                 return new Color(0.6f, 0.6f, 0.6f);
         }
     }
+
+    public int GetWeaponDamage()
+    {
+        switch (weaponRarity)
+        {
+            case WeaponRarity.DEFAULT:
+                return weaponDamage;
+
+            case WeaponRarity.RARE:
+                return (int)(weaponDamage * 1.2f);
+
+            case WeaponRarity.LEGENDARY:
+                return (int)(weaponDamage * 1.4f);
+
+            case WeaponRarity.ULTIMATE:
+                return (int)(weaponDamage * 1.75f);
+
+            case WeaponRarity.GOD:
+                return (int)(weaponDamage * 2f);
+
+            default:
+                return weaponDamage;
+        }
+    }
 }
 
 public enum WeaponRarity
@@ -46,4 +72,40 @@ public enum WeaponRarity
     LEGENDARY = 2,
     ULTIMATE = 3,
     GOD = 4
+}
+
+public enum WeaponRarityWeight
+{
+    DEFAULT = 500,
+    RARE = 250,
+    LEGENDARY = 125,
+    ULTIMATE = 75,
+    GOD = 50
+}
+
+public static class WeaponRarityConverter
+{
+    public static WeaponRarity ConvertFromWeight(WeaponRarityWeight weight)
+    {
+        switch (weight)
+        {
+            case WeaponRarityWeight.DEFAULT:
+                return WeaponRarity.DEFAULT;
+
+            case WeaponRarityWeight.RARE:
+                return WeaponRarity.RARE;
+
+            case WeaponRarityWeight.LEGENDARY:
+                return WeaponRarity.LEGENDARY;
+
+            case WeaponRarityWeight.ULTIMATE:
+                return WeaponRarity.ULTIMATE;
+
+            case WeaponRarityWeight.GOD:
+                return WeaponRarity.GOD;
+
+            default:
+                throw new ArgumentOutOfRangeException(nameof(weight), weight, null);
+        }
+    }
 }

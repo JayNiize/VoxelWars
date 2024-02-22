@@ -14,6 +14,7 @@ public class WorldWeaponInHand : MonoBehaviour
         WorldWeapon worldWeapon = GetComponent<WorldWeapon>();
         weaponSO = worldWeapon.GetWeaponInformation();
         muzzleTransform = worldWeapon.GetMuzzleTransform();
+
         Destroy(worldWeapon);
         Destroy(GetComponent<BoxCollider>());
     }

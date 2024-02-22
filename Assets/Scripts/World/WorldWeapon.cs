@@ -33,19 +33,26 @@ public class WorldWeapon : MonoBehaviour, IPickupable
         return muzzleTransform;
     }
 
-    public void ShowPickupInfo()
+    public void SetWeaponInformation(WeaponSO weapon)
+    {
+        weaponSO = weapon;
+    }
+
+    public void ShowActionInfo()
     {
         infoPanel = Instantiate(PrefabManager.Instance.GuiWeaponInformationPanel, Vector3.up, Quaternion.identity, transform).GetComponent<GUIWorldWeaponPanel>();
         infoPanel.Setup(weaponSO);
     }
 
-    public void HidePickupInfo()
+    public void HideActionInfo()
     {
         infoPanel.Hide();
     }
 
     public void ExecuteAction()
     {
-        throw new System.NotImplementedException();
+        Player.Instance.WeaponController.SwitchWeapon(0, true);
+        Player.Instance.InventoryController.AddToInventory(weaponSO, 3000); // TODO: Add bullet calculation
+        Destroy(gameObject);
     }
 }
