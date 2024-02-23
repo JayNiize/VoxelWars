@@ -12,6 +12,8 @@ public class GUIInventory : MonoBehaviour
     private GUIInventorySlot guiActiveInventorySlot;
     public static GUIInventory Instance;
 
+    [SerializeField] private TMPro.TextMeshProUGUI labelCurrentWeapon;
+
     private void Awake()
     {
         if (Instance == null)
@@ -48,6 +50,7 @@ public class GUIInventory : MonoBehaviour
                 guiActiveInventorySlot = guiInventorySlots[i];
                 inventorySlots[i].OnAmmoChanged.AddListener(UpdateAmmoLabel);
                 guiInventorySlots[i].SetActiveSlot(true);
+                labelCurrentWeapon.text = inventorySlots[i].Weapon == null ? "" : inventorySlots[i].Weapon.weaponName;
             }
             else
             {

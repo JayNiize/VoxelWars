@@ -81,7 +81,7 @@ public class WeaponController : MonoBehaviour
                     if (hit.transform.TryGetComponent<IHitable>(out IHitable hitable))
                     {
                         bool isCritialHit = CalculateCriticalHit();
-                        int damage = (int)(currentWeapon.GetWeaponDamage() * (isCritialHit ? 1.2f : 1f));
+                        int damage = (int)(currentWeapon.GetWeaponDamage() * (isCritialHit ? 1.2f : 1f) * UnityEngine.Random.Range(0.95f, 1.05f));
                         GUIManager.Instance.ScreenActions.SpawnDamageLabel(hit.point, damage.ToString(), isCritialHit);
                         hitable.Hit(damage, transform);
                     }
@@ -122,7 +122,6 @@ public class WeaponController : MonoBehaviour
                 currentWeaponSlotIndex = inventoryController.GetInventorySize() - 1;
             }
         }
-
         inventoryController.SetCurrentSlotIndex(currentWeaponSlotIndex);
         currentSlot = inventoryController.GetSlotById(currentWeaponSlotIndex);
         EquipWeapon(currentSlot.Weapon);

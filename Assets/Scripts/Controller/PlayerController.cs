@@ -1,4 +1,5 @@
 using Cinemachine;
+using DG.Tweening;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -11,6 +12,8 @@ public class PlayerController : MonoBehaviour
     [Header("Player Properties")]
     [SerializeField] private float playerSpeed = 5f;
 
+    [SerializeField] private float playerJumpHeight = 500f;
+
     [SerializeField] private float playerTurnSmoothness = 0.05f;
 
     [Header("Player Input")]
@@ -22,6 +25,7 @@ public class PlayerController : MonoBehaviour
     private InputAction aimAction;
     private InputAction actionAction;
     private InputAction switchWeaponAction;
+    private InputAction jumpAction;
 
     private Rigidbody rb;
     private Transform cam;
@@ -35,7 +39,7 @@ public class PlayerController : MonoBehaviour
     private Vector2 moveInput;
 
     private bool isShooting;
-
+    private bool isGrounded = true;
     private float curVelocity;
 
     //Cinemachine
@@ -73,6 +77,10 @@ public class PlayerController : MonoBehaviour
         switchWeaponAction = playerInput.FindAction("SwitchWeapon");
         switchWeaponAction.started += OnSwitchWeaponStarted;
         switchWeaponAction.canceled += OnSwitchWeaponStopped;
+
+        jumpAction = playerInput.FindAction("Jump");
+        jumpAction.started += OnJumpStarted;
+        jumpAction.canceled += OnJumpStopped;
     }
 
     private void Start()
@@ -165,6 +173,18 @@ public class PlayerController : MonoBehaviour
     {
     }
 
+    private void OnJumpStarted(InputAction.CallbackContext ctx)
+    {
+        if (isGrounded)
+        {
+            HandleJump();
+        }
+    }
+
+    private void OnJumpStopped(InputAction.CallbackContext ctx)
+    {
+    }
+
     private void OnAimStarted(InputAction.CallbackContext ctx)
     {
         if (weaponController.HasWeaponEquipped())
@@ -181,6 +201,10 @@ public class PlayerController : MonoBehaviour
             CameraManager.Instance.SetAimCamera(false, 0);
             GUIManager.Instance.WeaponScope.HideScope();
         }
+    }
+
+    private void HandleJump()
+    {
     }
 
     private void HandleCameraRotation()

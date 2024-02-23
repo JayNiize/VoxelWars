@@ -1,11 +1,15 @@
+using Cinemachine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class WorldEntity : MonoBehaviour, IHitable, IHealth
 {
     [SerializeField] private GameObject destroyedPrefab;
     [SerializeField] private int maxHealth;
+
+    private MeshFilter tempMesh;
 
     public int MaxHealth
     { get { return maxHealth; } set { maxHealth = value; } }
@@ -18,6 +22,8 @@ public class WorldEntity : MonoBehaviour, IHitable, IHealth
     private void Awake()
     {
         CurrentHealth = MaxHealth;
+
+        tempMesh = GetComponentInChildren<MeshFilter>();
     }
 
     public void Hit(int damage, Transform hitSource)
@@ -37,6 +43,7 @@ public class WorldEntity : MonoBehaviour, IHitable, IHealth
         {
             if (destroyedPrefab != null)
                 Instantiate(destroyedPrefab, transform.position, Quaternion.identity);
+            CameraShake.Instance.Shake(0.25f, 0.1f);
             Destroy(gameObject);
         }
     }
