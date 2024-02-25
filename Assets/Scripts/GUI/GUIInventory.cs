@@ -16,6 +16,7 @@ public class GUIInventory : MonoBehaviour
     [SerializeField] private TMPro.TextMeshProUGUI labelCurrentWeapon;
     [SerializeField] private TMPro.TextMeshProUGUI labelCurrentAmmo;
     [SerializeField] private TMPro.TextMeshProUGUI labelTotalAmmo;
+    [SerializeField] private Slider sliderReload;
     [SerializeField] private Image backgroundCurrentWeapon;
 
     private WeaponSO currentActiveWeapon;
@@ -85,5 +86,10 @@ public class GUIInventory : MonoBehaviour
             return;
         }
         labelTotalAmmo.text = ammoSlots[currentActiveWeapon.weaponAmmo].ToString();
+    }
+
+    internal void UpdateReloadSlider(float value)
+    {
+        sliderReload.value = value;
     }
 }

@@ -118,6 +118,7 @@ public class InventoryController : MonoBehaviour
         if (ammoSlots.ContainsKey(ammoSO))
         {
             ammoSlots[ammoSO] -= ammoAmount;
+            OnAmmoAddedToInventory.Invoke(ammoSlots);
         }
     }
 }

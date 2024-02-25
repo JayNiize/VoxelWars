@@ -22,6 +22,8 @@ public class WeaponController : MonoBehaviour
     private InventoryController inventoryController;
     private InventorySlot currentSlot;
 
+    private bool isReloading;
+
     private void Start()
     {
         inventoryController = GetComponent<InventoryController>();
@@ -58,35 +60,11 @@ public class WeaponController : MonoBehaviour
 
     public void ShootWithWeapon()
     {
-        if (currentWeapon != null)
+        if (currentWeapon != null && !isReloading)
         {
             tempShootingDuration += Time.deltaTime;
             if (tempShootingDuration >= currentWeapon.weaponSpeed)
             {
-                if (currentSlot.Ammo <= 0)
-                {
-                    if (inventoryController.GetAmmoAmount(currentWeapon.weaponAmmo) > 0)
-                    {
-                        tempReloadDuration += Time.deltaTime;
-                        if (tempReloadDuration >= currentWeapon.weaponReloadTime)
-                        {
-                            int ammoAmount = inventoryController.GetAmmoAmount(currentWeapon.weaponAmmo);
-                            tempReloadDuration = 0;
-                            if (ammoAmount < currentWeapon.weaponmagazineSize)
-                            {
-                                currentSlot.Ammo = ammoAmount;
-                                inventoryController.RemoveFromInventory(currentWeapon.weaponAmmo, ammoAmount);
-                            }
-                            else
-                            {
-                                currentSlot.Ammo = currentWeapon.weaponmagazineSize;
-                                inventoryController.RemoveFromInventory(currentWeapon.weaponAmmo, currentWeapon.weaponmagazineSize);
-                            }
-                        }
-                    }
-                    Debug.Log("No ammo");
-                    return;
-                }
                 currentSlot.Ammo--;
                 tempShootingDuration = 0;
                 Vector2 screenCenter = new Vector2(Screen.width / 2f, Screen.height / 2f);
@@ -110,6 +88,12 @@ public class WeaponController : MonoBehaviour
                 {
                     Transform bulletTrail = Instantiate(PrefabManager.Instance.TrailBullet, currentWeaponWorld.GetMuzzlePosition(), Quaternion.identity).transform;
                     bulletTrail.DOMove(ray.GetPoint(50f), BULLET_TRAIL_TIME);
+                }
+
+                if (currentSlot.Ammo <= 0)
+                {
+                    isReloading = true;
+                    StartCoroutine(ReloadWeapon());
                 }
             }
         }
@@ -145,5 +129,36 @@ public class WeaponController : MonoBehaviour
         inventoryController.SetCurrentSlotIndex(currentWeaponSlotIndex);
         currentSlot = inventoryController.GetSlotById(currentWeaponSlotIndex);
         EquipWeapon(currentSlot.Weapon);
+    }
+
+    private IEnumerator ReloadWeapon()
+    {
+        int availableTotalAmmo = inventoryController.GetAmmoAmount(currentWeapon.weaponAmmo);
+        if (availableTotalAmmo <= 0)
+        {
+            Debug.Log("No Ammo");
+            yield break;
+        }
+        Debug.Log("Reload");
+        float tempTime = 0;
+        while (tempTime < currentWeapon.weaponReloadTime)
+        {
+            tempTime += Time.deltaTime;
+            GUIInventory.Instance.UpdateReloadSlider(tempTime / currentWeapon.weaponReloadTime);
+            yield return new WaitForEndOfFrame();
+        }
+
+        GUIInventory.Instance.UpdateReloadSlider(0);
+        if (availableTotalAmmo < currentWeapon.weaponmagazineSize)
+        {
+            currentSlot.Ammo = availableTotalAmmo;
+            inventoryController.RemoveFromInventory(currentWeapon.weaponAmmo, availableTotalAmmo);
+        }
+        else
+        {
+            currentSlot.Ammo = currentWeapon.weaponmagazineSize;
+            inventoryController.RemoveFromInventory(currentWeapon.weaponAmmo, currentWeapon.weaponmagazineSize);
+        }
+        isReloading = false;
     }
 }
