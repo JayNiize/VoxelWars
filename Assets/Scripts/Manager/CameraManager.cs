@@ -1,4 +1,5 @@
 using Cinemachine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,9 +7,11 @@ using UnityEngine;
 public class CameraManager : MonoBehaviour
 {
     [SerializeField] private CinemachineVirtualCamera aimCamera;
+    [SerializeField] private Camera minimapCamera;
     [SerializeField] private CinemachineVirtualCamera thirdPersonCamera;
 
     private float defaultFOV;
+    private float defaultMinimapCameraY;
     public static CameraManager Instance;
 
     private void Awake()
@@ -19,6 +22,7 @@ public class CameraManager : MonoBehaviour
         }
         defaultFOV = thirdPersonCamera.m_Lens.FieldOfView;
         aimCamera.m_Lens.FieldOfView = defaultFOV;
+        defaultMinimapCameraY = minimapCamera.transform.position.y;
     }
 
     public void SetAimCamera(bool isActive, float weaponScope)
@@ -35,5 +39,10 @@ public class CameraManager : MonoBehaviour
     public Camera GetMainCamera()
     {
         return Camera.main;
+    }
+
+    internal void UpdateMinimapCamera(Vector3 pos)
+    {
+        minimapCamera.transform.position = new Vector3(pos.x, defaultMinimapCameraY, pos.z);
     }
 }

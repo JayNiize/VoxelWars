@@ -242,6 +242,7 @@ GameObject:
   - component: {fileID: 1062951911513305147}
   - component: {fileID: 9075604961468785934}
   - component: {fileID: 1873435690026284514}
+  - component: {fileID: 368643507280172332}
   m_Layer: 3
   m_Name: Player
   m_TagString: Untagged
@@ -311,6 +312,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerSpeed: 5
+  playerJumpHeight: 500
   playerTurnSmoothness: 0.05
   playerInput: {fileID: -944628639613478452, guid: 3a1c17bf092c2b142948154600acd714,
     type: 3}
@@ -405,12 +407,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6bb0d2ea8c7774b468b606d84ecdf01d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  inventorySize: 4
   OnItemAddedToInventory:
     m_PersistentCalls:
       m_Calls: []
   OnItemRemovedInventory:
     m_PersistentCalls:
       m_Calls: []
+  OnInventorySlotChanged:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &368643507280172332
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6589018977084583268}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd8faad0d30213d4d8ce5f00d75ec561, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &7284205017585747767
 GameObject:
   m_ObjectHideFlags: 0

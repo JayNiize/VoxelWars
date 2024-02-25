@@ -19,6 +19,7 @@ public class WorldTreasureChest : MonoBehaviour, IActionable
         {
             return;
         }
+        isOpen = true;
         treasureTop.DOLocalRotate(new Vector3(0, 0, openRotation), openDuration).SetEase(Ease.OutBounce);
 
         for (int i = 0; i < Random.Range(minItemsToDrop, maxItemsToDrop - 1); i++)
@@ -27,7 +28,7 @@ public class WorldTreasureChest : MonoBehaviour, IActionable
             List<WeaponSO> possibleWeapons = ItemManager.Instance.GetAllWeaponsByRarity(weaponRarity);
             WeaponSO weaponToSpawn = possibleWeapons[Random.Range(0, possibleWeapons.Count - 1)];
 
-            WorldWeapon worldWeapon = Instantiate(weaponToSpawn.weaponPrefab, transform.position + new Vector3(Random.Range(-5.0f, 5.0f), 0, Random.Range(-5.0f, 5.0f)), Quaternion.identity).GetComponent<WorldWeapon>();
+            WorldWeapon worldWeapon = Instantiate(weaponToSpawn.weaponPrefab, transform.position + Vector3.left, Quaternion.identity).GetComponent<WorldWeapon>();
             worldWeapon.SetWeaponInformation(weaponToSpawn);
         }
     }

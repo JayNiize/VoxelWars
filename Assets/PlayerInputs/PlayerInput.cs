@@ -89,6 +89,15 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Marker"",
+                    ""type"": ""Button"",
+                    ""id"": ""23aaa66b-211e-4b89-a135-55f303a2fd97"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -212,6 +221,17 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""action"": ""Jump"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""9036bbad-a26c-4848-8f1d-b555a15801ba"",
+                    ""path"": ""<Mouse>/middleButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Marker"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         },
@@ -255,6 +275,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         m_Player_Action = m_Player.FindAction("Action", throwIfNotFound: true);
         m_Player_SwitchWeapon = m_Player.FindAction("SwitchWeapon", throwIfNotFound: true);
         m_Player_Jump = m_Player.FindAction("Jump", throwIfNotFound: true);
+        m_Player_Marker = m_Player.FindAction("Marker", throwIfNotFound: true);
         // Dashboard
         m_Dashboard = asset.FindActionMap("Dashboard", throwIfNotFound: true);
         m_Dashboard_Newaction = m_Dashboard.FindAction("New action", throwIfNotFound: true);
@@ -326,6 +347,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Action;
     private readonly InputAction m_Player_SwitchWeapon;
     private readonly InputAction m_Player_Jump;
+    private readonly InputAction m_Player_Marker;
     public struct PlayerActions
     {
         private @PlayerInput m_Wrapper;
@@ -337,6 +359,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         public InputAction @Action => m_Wrapper.m_Player_Action;
         public InputAction @SwitchWeapon => m_Wrapper.m_Player_SwitchWeapon;
         public InputAction @Jump => m_Wrapper.m_Player_Jump;
+        public InputAction @Marker => m_Wrapper.m_Player_Marker;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -367,6 +390,9 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
             @Jump.started += instance.OnJump;
             @Jump.performed += instance.OnJump;
             @Jump.canceled += instance.OnJump;
+            @Marker.started += instance.OnMarker;
+            @Marker.performed += instance.OnMarker;
+            @Marker.canceled += instance.OnMarker;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -392,6 +418,9 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
             @Jump.started -= instance.OnJump;
             @Jump.performed -= instance.OnJump;
             @Jump.canceled -= instance.OnJump;
+            @Marker.started -= instance.OnMarker;
+            @Marker.performed -= instance.OnMarker;
+            @Marker.canceled -= instance.OnMarker;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -464,6 +493,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         void OnAction(InputAction.CallbackContext context);
         void OnSwitchWeapon(InputAction.CallbackContext context);
         void OnJump(InputAction.CallbackContext context);
+        void OnMarker(InputAction.CallbackContext context);
     }
     public interface IDashboardActions
     {

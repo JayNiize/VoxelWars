@@ -9,6 +9,7 @@ public class PrefabManager : MonoBehaviour
     public GameObject ParticlesShooting;
 
     public GameObject ParticlesHit;
+    public GameObject ParticlesTacticalMarker;
 
     [Header("Trails")]
     public GameObject TrailBullet;

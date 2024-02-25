@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GUIInventory : MonoBehaviour
 {
@@ -13,6 +14,11 @@ public class GUIInventory : MonoBehaviour
     public static GUIInventory Instance;
 
     [SerializeField] private TMPro.TextMeshProUGUI labelCurrentWeapon;
+    [SerializeField] private TMPro.TextMeshProUGUI labelCurrentAmmo;
+    [SerializeField] private TMPro.TextMeshProUGUI labelTotalAmmo;
+    [SerializeField] private Image backgroundCurrentWeapon;
+
+    private WeaponSO currentActiveWeapon;
 
     private void Awake()
     {
@@ -50,7 +56,10 @@ public class GUIInventory : MonoBehaviour
                 guiActiveInventorySlot = guiInventorySlots[i];
                 inventorySlots[i].OnAmmoChanged.AddListener(UpdateAmmoLabel);
                 guiInventorySlots[i].SetActiveSlot(true);
-                labelCurrentWeapon.text = inventorySlots[i].Weapon == null ? "" : inventorySlots[i].Weapon.weaponName;
+                currentActiveWeapon = inventorySlots[i].Weapon;
+
+                labelCurrentWeapon.text = currentActiveWeapon == null ? "" : currentActiveWeapon.weaponName;
+                backgroundCurrentWeapon.color = currentActiveWeapon == null ? new Color(0, 0, 0, 0) : currentActiveWeapon.GetWeaponColor();
             }
             else
             {
@@ -62,6 +71,19 @@ public class GUIInventory : MonoBehaviour
 
     private void UpdateAmmoLabel(int ammo)
     {
-        guiActiveInventorySlot.SetAmmoLabel(ammo);
+        labelCurrentAmmo.text = ammo.ToString();
+    }
+
+    internal void UpdateTotalAmmo(Dictionary<AmmoSO, int> ammoSlots)
+    {
+        if (currentActiveWeapon == null)
+        {
+            return;
+        }
+        if (!ammoSlots.ContainsKey(currentActiveWeapon.weaponAmmo))
+        {
+            return;
+        }
+        labelTotalAmmo.text = ammoSlots[currentActiveWeapon.weaponAmmo].ToString();
     }
 }

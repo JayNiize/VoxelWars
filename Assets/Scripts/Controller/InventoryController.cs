@@ -10,10 +10,12 @@ public class InventoryController : MonoBehaviour
     [SerializeField] private int inventorySize = 4;
     private WeaponController weaponController;
     private List<InventorySlot> inventorySlots = new List<InventorySlot>();
+    private Dictionary<AmmoSO, int> ammoSlots = new Dictionary<AmmoSO, int>();
 
     public UnityEvent<List<InventorySlot>> OnItemAddedToInventory;
     public UnityEvent<List<InventorySlot>> OnItemRemovedInventory;
     public UnityEvent<List<InventorySlot>, int> OnInventorySlotChanged;
+    public UnityEvent<Dictionary<AmmoSO, int>> OnAmmoAddedToInventory;
 
     private void Awake()
     {
@@ -35,7 +37,7 @@ public class InventoryController : MonoBehaviour
         return foundSlot != null ? foundSlot.Ammo : 0;
     }
 
-    public void AddToInventory(WeaponSO weapon, int ammo)
+    public void AddToInventory(WeaponSO weapon)
     {
         if (inventorySlots.Where(x => x.Weapon == null).Count() == 0)
         {
@@ -46,13 +48,13 @@ public class InventoryController : MonoBehaviour
         InventorySlot foundSlot = inventorySlots.Where(x => x.Weapon == weapon).FirstOrDefault();
         if (foundSlot != null)
         {
-            foundSlot.Ammo += ammo;
+            foundSlot.Ammo += weapon.weaponmagazineSize;
         }
         else
         {
             foundSlot = inventorySlots.Where(x => x.Weapon == null).First();
             foundSlot.Weapon = weapon;
-            foundSlot.Ammo = ammo;
+            foundSlot.Ammo = weapon.weaponmagazineSize;
         }
 
         if (inventorySlots.Where(x => x.Weapon != null).Count() == 1)
@@ -61,6 +63,28 @@ public class InventoryController : MonoBehaviour
         }
 
         OnItemAddedToInventory.Invoke(inventorySlots);
+    }
+
+    public void AddToInventory(AmmoSO ammo, int amount)
+    {
+        if (ammoSlots.ContainsKey(ammo))
+        {
+            ammoSlots[ammo] += amount;
+        }
+        else
+        {
+            ammoSlots.Add(ammo, amount);
+        }
+        OnAmmoAddedToInventory.Invoke(ammoSlots);
+    }
+
+    public int GetAmmoAmount(AmmoSO ammo)
+    {
+        if (!ammoSlots.ContainsKey(ammo))
+        {
+            return 0;
+        }
+        return ammoSlots[ammo];
     }
 
     public void RemoveFromInventory(WeaponSO weapon)
@@ -87,6 +111,14 @@ public class InventoryController : MonoBehaviour
     internal void SetCurrentSlotIndex(int currentWeaponSlotIndex)
     {
         OnInventorySlotChanged.Invoke(inventorySlots, currentWeaponSlotIndex);
+    }
+
+    internal void RemoveFromInventory(AmmoSO ammoSO, int ammoAmount)
+    {
+        if (ammoSlots.ContainsKey(ammoSO))
+        {
+            ammoSlots[ammoSO] -= ammoAmount;
+        }
     }
 }
 

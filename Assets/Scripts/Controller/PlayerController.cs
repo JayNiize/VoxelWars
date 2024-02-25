@@ -26,10 +26,12 @@ public class PlayerController : MonoBehaviour
     private InputAction actionAction;
     private InputAction switchWeaponAction;
     private InputAction jumpAction;
+    private InputAction markerAction;
 
     private Rigidbody rb;
     private Transform cam;
     private WeaponController weaponController;
+    private MarkerController markerController;
     [SerializeField] private PlayerPickup playerPickup;
 
     [Header("Animation")]
@@ -55,6 +57,7 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         cam = Camera.main.transform;
         weaponController = GetComponent<WeaponController>();
+        markerController = GetComponent<MarkerController>();
 
         moveAction = playerInput.FindAction("Move");
         moveAction.started += OnMovementStarted;
@@ -81,6 +84,10 @@ public class PlayerController : MonoBehaviour
         jumpAction = playerInput.FindAction("Jump");
         jumpAction.started += OnJumpStarted;
         jumpAction.canceled += OnJumpStopped;
+
+        markerAction = playerInput.FindAction("Marker");
+        markerAction.started += OnMarkerStarted;
+        markerAction.canceled += OnMarkerStopped;
     }
 
     private void Start()
@@ -101,6 +108,7 @@ public class PlayerController : MonoBehaviour
     private void LateUpdate()
     {
         HandleCameraRotation();
+        HandleMinimapCamera();
     }
 
     private void HandleAttack()
@@ -125,6 +133,11 @@ public class PlayerController : MonoBehaviour
         {
             rb.MoveRotation(Quaternion.Euler(0, cam.eulerAngles.y, 0));
         }
+    }
+
+    private void HandleMarker()
+    {
+        markerController.ShootWithMarker();
     }
 
     private float CalculatePlayerRotation()
@@ -203,6 +216,15 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private void OnMarkerStarted(InputAction.CallbackContext ctx)
+    {
+        HandleMarker();
+    }
+
+    private void OnMarkerStopped(InputAction.CallbackContext ctx)
+    {
+    }
+
     private void HandleJump()
     {
     }
@@ -226,6 +248,11 @@ public class PlayerController : MonoBehaviour
         // Cinemachine will follow this target
         cinemachineCameraTarget.transform.rotation = Quaternion.Euler(_cinemachineTargetPitch,
             _cinemachineTargetYaw, 0.0f);
+    }
+
+    private void HandleMinimapCamera()
+    {
+        CameraManager.Instance.UpdateMinimapCamera(transform.position);
     }
 
     private static float ClampAngle(float lfAngle, float lfMin, float lfMax)

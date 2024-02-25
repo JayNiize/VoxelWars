@@ -51,7 +51,7 @@ public class WorldWeapon : MonoBehaviour, IPickupable
 
     public void ExecuteAction()
     {
-        Player.Instance.InventoryController.AddToInventory(weaponSO, 3000); // TODO: Add bullet calculation
+        Player.Instance.InventoryController.AddToInventory(weaponSO);
         Player.Instance.WeaponController.SwitchWeapon(0, true);
 
         Destroy(gameObject);

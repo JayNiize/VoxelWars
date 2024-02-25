@@ -41,5 +41,6 @@ public class GUIManager : MonoBehaviour
         this.inventoryController.OnItemAddedToInventory.AddListener(inventory.UpdateInventory);
         this.inventoryController.OnItemRemovedInventory.AddListener(inventory.UpdateInventory);
         this.inventoryController.OnInventorySlotChanged.AddListener(inventory.UpdateInventorySlots);
+        this.inventoryController.OnAmmoAddedToInventory.AddListener(inventory.UpdateTotalAmmo);
     }
 }

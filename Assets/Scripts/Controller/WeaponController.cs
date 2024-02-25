@@ -16,8 +16,8 @@ public class WeaponController : MonoBehaviour
 
     private int currentWeaponSlotIndex = 0;
 
-    private Vector2 screenCenter = new Vector2(Screen.width / 2f, Screen.height / 2f);
     private float tempShootingDuration;
+    private float tempReloadDuration;
     private WorldWeaponInHand currentWeaponWorld;
     private InventoryController inventoryController;
     private InventorySlot currentSlot;
@@ -65,11 +65,31 @@ public class WeaponController : MonoBehaviour
             {
                 if (currentSlot.Ammo <= 0)
                 {
+                    if (inventoryController.GetAmmoAmount(currentWeapon.weaponAmmo) > 0)
+                    {
+                        tempReloadDuration += Time.deltaTime;
+                        if (tempReloadDuration >= currentWeapon.weaponReloadTime)
+                        {
+                            int ammoAmount = inventoryController.GetAmmoAmount(currentWeapon.weaponAmmo);
+                            tempReloadDuration = 0;
+                            if (ammoAmount < currentWeapon.weaponmagazineSize)
+                            {
+                                currentSlot.Ammo = ammoAmount;
+                                inventoryController.RemoveFromInventory(currentWeapon.weaponAmmo, ammoAmount);
+                            }
+                            else
+                            {
+                                currentSlot.Ammo = currentWeapon.weaponmagazineSize;
+                                inventoryController.RemoveFromInventory(currentWeapon.weaponAmmo, currentWeapon.weaponmagazineSize);
+                            }
+                        }
+                    }
                     Debug.Log("No ammo");
                     return;
                 }
                 currentSlot.Ammo--;
                 tempShootingDuration = 0;
+                Vector2 screenCenter = new Vector2(Screen.width / 2f, Screen.height / 2f);
                 Ray ray = Camera.main.ScreenPointToRay(screenCenter);
                 RaycastHit hit;
                 Instantiate(PrefabManager.Instance.ParticlesShooting, currentWeaponWorld.GetMuzzlePosition(), Quaternion.LookRotation(ray.direction, Vector3.up));
