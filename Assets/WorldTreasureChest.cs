@@ -9,6 +9,10 @@ public class WorldTreasureChest : MonoBehaviour, IActionable
     [SerializeField] private float openDuration = 1f;
     [SerializeField] private Transform treasureTop;
 
+    [SerializeField] private GameObject treasureLight;
+    [SerializeField] private GameObject treasureParticles;
+    private GUIWorldWeaponPanel infoPanel;
+
     private int minItemsToDrop = 2;
     private int maxItemsToDrop = 5;
     private bool isOpen = false;
@@ -20,7 +24,14 @@ public class WorldTreasureChest : MonoBehaviour, IActionable
             return;
         }
         isOpen = true;
-        treasureTop.DOLocalRotate(new Vector3(0, 0, openRotation), openDuration).SetEase(Ease.OutBounce);
+        treasureTop.DOLocalRotate(new Vector3(openRotation, 0, 0), openDuration).SetEase(Ease.OutBounce);
+        if (infoPanel != null)
+        {
+            infoPanel.Hide();
+        }
+
+        treasureLight.SetActive(false);
+        treasureParticles.gameObject.SetActive(false);
 
         for (int i = 0; i < Random.Range(minItemsToDrop, maxItemsToDrop - 1); i++)
         {
@@ -28,16 +39,27 @@ public class WorldTreasureChest : MonoBehaviour, IActionable
             List<WeaponSO> possibleWeapons = ItemManager.Instance.GetAllWeaponsByRarity(weaponRarity);
             WeaponSO weaponToSpawn = possibleWeapons[Random.Range(0, possibleWeapons.Count - 1)];
 
-            WorldWeapon worldWeapon = Instantiate(weaponToSpawn.weaponPrefab, transform.position + Vector3.left, Quaternion.identity).GetComponent<WorldWeapon>();
+            WorldWeapon worldWeapon = Instantiate(weaponToSpawn.weaponPrefab, transform.position + transform.forward + (transform.right * Random.Range(-2.00f, 2.00f)), Quaternion.identity).GetComponent<WorldWeapon>();
             worldWeapon.SetWeaponInformation(weaponToSpawn);
         }
     }
 
-    public void HideActionInfo()
-    {
-    }
-
     public void ShowActionInfo()
     {
+        if (isOpen)
+        {
+            return;
+        }
+        infoPanel = Instantiate(PrefabManager.Instance.GuiWeaponInformationPanel, Vector3.up, Quaternion.identity, transform).GetComponent<GUIWorldWeaponPanel>();
+        infoPanel.Setup(UsedColors.TreasureColor, "Open Treasure Chest");
+    }
+
+    public void HideActionInfo()
+    {
+        if (isOpen)
+        {
+            return;
+        }
+        infoPanel.Hide();
     }
 }

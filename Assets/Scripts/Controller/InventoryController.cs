@@ -75,6 +75,10 @@ public class InventoryController : MonoBehaviour
         {
             ammoSlots.Add(ammo, amount);
         }
+        if (weaponController.GetActiveSlot().Ammo <= 0)
+        {
+            StartCoroutine(weaponController.ReloadWeapon());
+        }
         OnAmmoAddedToInventory.Invoke(ammoSlots);
     }
 

@@ -17,7 +17,7 @@ MonoBehaviour:
   weaponScopeStrength: 2
   weaponReachRadius: 100
   weaponSpeed: 0.1
-  weaponReloadTime: 3
+  weaponReloadTime: 1
   weaponmagazineSize: 30
   weaponPrefab: {fileID: 5876634647976788333, guid: aff95aa443c29ed43ae283f34f428262,
     type: 3}

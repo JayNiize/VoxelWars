@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class WeaponController : MonoBehaviour
 {
@@ -21,6 +22,11 @@ public class WeaponController : MonoBehaviour
     private WorldWeaponInHand currentWeaponWorld;
     private InventoryController inventoryController;
     private InventorySlot currentSlot;
+
+    private InventorySlot CurrentSlot
+    { get { return currentSlot; } set { currentSlot = value; OnCurrentWeaponSlotChange.Invoke(currentSlot); } }
+
+    public UnityEvent<InventorySlot> OnCurrentWeaponSlotChange;
 
     private bool isReloading;
 
@@ -129,10 +135,19 @@ public class WeaponController : MonoBehaviour
         inventoryController.SetCurrentSlotIndex(currentWeaponSlotIndex);
         currentSlot = inventoryController.GetSlotById(currentWeaponSlotIndex);
         EquipWeapon(currentSlot.Weapon);
+        StopAllCoroutines();
+        if (currentSlot.Ammo <= 0)
+        {
+            StartCoroutine(ReloadWeapon());
+        }
     }
 
-    private IEnumerator ReloadWeapon()
+    public IEnumerator ReloadWeapon()
     {
+        if (currentWeapon == null)
+        {
+            yield break;
+        }
         int availableTotalAmmo = inventoryController.GetAmmoAmount(currentWeapon.weaponAmmo);
         if (availableTotalAmmo <= 0)
         {
@@ -160,5 +175,10 @@ public class WeaponController : MonoBehaviour
             inventoryController.RemoveFromInventory(currentWeapon.weaponAmmo, currentWeapon.weaponmagazineSize);
         }
         isReloading = false;
+    }
+
+    internal InventorySlot GetActiveSlot()
+    {
+        return currentSlot;
     }
 }

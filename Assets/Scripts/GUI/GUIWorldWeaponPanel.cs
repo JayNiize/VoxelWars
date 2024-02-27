@@ -36,6 +36,14 @@ public class GUIWorldWeaponPanel : MonoBehaviour
         weaponInfoCanvas.worldCamera = CameraManager.Instance.GetMainCamera();
     }
 
+    public void Setup(Color color, string text)
+    {
+        panel.color = color;
+        labelActionKey.color = color;
+        labelName.text = text;
+        weaponInfoCanvas.worldCamera = CameraManager.Instance.GetMainCamera();
+    }
+
     public void Hide()
     {
         DOTween.Kill(transform);

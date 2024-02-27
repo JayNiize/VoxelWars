@@ -7,6 +7,7 @@ public class GUIManager : MonoBehaviour
     [SerializeField] private GUIHealthbar healthbar;
     [SerializeField] private GUIInventory inventory;
     [SerializeField] private GUIScreenActions screenActions;
+    [SerializeField] private GUIGameInfo gameInfo;
 
     public GUIScreenActions ScreenActions
     { get { return screenActions; } }
@@ -18,6 +19,8 @@ public class GUIManager : MonoBehaviour
 
     private Player player;
     private InventoryController inventoryController;
+    private WeaponController weaponController;
+    private WorldZone worldZone;
 
     public static GUIManager Instance;
 
@@ -42,5 +45,17 @@ public class GUIManager : MonoBehaviour
         this.inventoryController.OnItemRemovedInventory.AddListener(inventory.UpdateInventory);
         this.inventoryController.OnInventorySlotChanged.AddListener(inventory.UpdateInventorySlots);
         this.inventoryController.OnAmmoAddedToInventory.AddListener(inventory.UpdateTotalAmmo);
+    }
+
+    public void RegisterWeaponController(WeaponController controller)
+    {
+        // this.weaponController.OnCurrentWeaponChange.AddListener()
+    }
+
+    public void RegisterWorldZone(WorldZone worldZone)
+    {
+        this.worldZone = worldZone;
+        this.worldZone.OnChangeIsResting.AddListener(gameInfo.UpdateIsResting);
+        this.worldZone.OnChangeTimer.AddListener(gameInfo.UpdateTimer);
     }
 }
