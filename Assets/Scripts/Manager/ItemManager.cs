@@ -27,8 +27,8 @@ public class ItemManager : MonoBehaviour
         return weaponList;
     }
 
-    public List<WeaponSO> GetAllWeaponsByRarity(WeaponRarity weaponRarity)
+    public List<WeaponSO> GetAllWeaponsByRarity(RarityEnum weaponRarity)
     {
-        return weaponList.Where(x => x.weaponRarity == weaponRarity).ToList();
+        return weaponList.Where(x => x.Rarity == weaponRarity).ToList();
     }
 }

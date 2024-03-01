@@ -14,13 +14,13 @@ public class GUIInventorySlot : MonoBehaviour
     public bool IsActiveSlot
     { get { return isActiveSlot; } }
 
-    public void SetSlotData(WeaponSO weapon, int ammoCount)
+    public void SetSlotData(ItemSO weapon, int ammoCount)
     {
         weaponImage.gameObject.SetActive(true);
         backgroundImage.gameObject.SetActive(true);
 
-        weaponImage.sprite = weapon.weaponPreviewImage;
-        backgroundImage.color = weapon.GetWeaponColor();
+        weaponImage.sprite = weapon.PreviewSprite;
+        backgroundImage.color = weapon.GetItemColor();
     }
 
     public void SetActiveSlot(bool isActive)

@@ -36,11 +36,11 @@ public class WorldTreasureChest : NetworkBehaviour, IActionable
 
         for (int i = 0; i < Random.Range(minItemsToDrop, maxItemsToDrop - 1); i++)
         {
-            WeaponRarity weaponRarity = LootManager.Instance.CalculateWeaponRarity();
+            RarityEnum weaponRarity = LootManager.Instance.CalculateWeaponRarity();
             List<WeaponSO> possibleWeapons = ItemManager.Instance.GetAllWeaponsByRarity(weaponRarity);
-            WeaponSO weaponToSpawn = possibleWeapons[Random.Range(0, possibleWeapons.Count - 1)];
+            WeaponSO weaponToSpawn = possibleWeapons[Random.Range(0, possibleWeapons.Count)];
 
-            WorldWeapon worldWeapon = Instantiate(weaponToSpawn.weaponPrefab, transform.position + transform.forward + (transform.right * Random.Range(-2.00f, 2.00f)), Quaternion.identity).GetComponent<WorldWeapon>();
+            WorldWeapon worldWeapon = Instantiate(weaponToSpawn.Prefab, transform.position + transform.forward + (transform.right * Random.Range(-2.00f, 2.00f)), Quaternion.identity).GetComponent<WorldWeapon>();
             worldWeapon.SetWeaponInformation(weaponToSpawn);
         }
     }

@@ -53,7 +53,6 @@ public class WorldWeapon : NetworkBehaviour, IPickupable
     public void ExecuteAction()
     {
         Player.Instance.InventoryController.AddToInventory(weaponSO);
-        Player.Instance.WeaponController.SwitchWeapon(0, true);
 
         Destroy(gameObject);
     }

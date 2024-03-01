@@ -13,13 +13,13 @@ public class GUIInventory : MonoBehaviour
     private GUIInventorySlot guiActiveInventorySlot;
     public static GUIInventory Instance;
 
-    [SerializeField] private TMPro.TextMeshProUGUI labelCurrentWeapon;
+    [SerializeField] private TMPro.TextMeshProUGUI labelCurrentItem;
     [SerializeField] private TMPro.TextMeshProUGUI labelCurrentAmmo;
     [SerializeField] private TMPro.TextMeshProUGUI labelTotalAmmo;
     [SerializeField] private Slider sliderReload;
     [SerializeField] private Image backgroundCurrentWeapon;
 
-    private WeaponSO currentActiveWeapon;
+    private ItemSO currentItem;
 
     private void Awake()
     {
@@ -41,30 +41,36 @@ public class GUIInventory : MonoBehaviour
     public void UpdateInventory(List<InventorySlot> inventorySlots)
     {
         int index = 0;
-        foreach (InventorySlot slot in inventorySlots.Where(x => x.Weapon != null).ToList())
+        foreach (InventorySlot slot in inventorySlots.Where(x => x.Item != null).ToList())
         {
-            guiInventorySlots[index].SetSlotData(slot.Weapon, slot.Ammo);
+            guiInventorySlots[index].SetSlotData(slot.Item, slot.Ammo);
             index++;
         }
     }
 
-    internal void UpdateInventorySlots(List<InventorySlot> inventorySlots, int activeSlotId)
+    internal void UpdateInventorySlots(List<InventorySlot> inventorySlots, int activeSlotId, int totalAmmoForCurrentItem)
     {
         for (int i = 0; i < guiInventorySlots.Count; i++)
         {
             if (i == activeSlotId)
             {
                 guiActiveInventorySlot = guiInventorySlots[i];
-                inventorySlots[i].OnAmmoChanged.AddListener(UpdateAmmoLabel);
+                inventorySlots[i].OnCurrentAmmoChanged.AddListener(UpdateAmmoLabel);
                 guiInventorySlots[i].SetActiveSlot(true);
-                currentActiveWeapon = inventorySlots[i].Weapon;
+                currentItem = inventorySlots[i].Item;
 
-                labelCurrentWeapon.text = currentActiveWeapon == null ? "" : currentActiveWeapon.weaponName;
-                backgroundCurrentWeapon.color = currentActiveWeapon == null ? new Color(0, 0, 0, 0) : currentActiveWeapon.GetWeaponColor();
+                labelCurrentAmmo.gameObject.SetActive(currentItem != null);
+                labelTotalAmmo.gameObject.SetActive(currentItem != null);
+
+                labelCurrentAmmo.text = inventorySlots[i].Ammo.ToString();
+                labelTotalAmmo.text = totalAmmoForCurrentItem.ToString();
+
+                labelCurrentItem.text = currentItem == null ? "" : currentItem.GetName();
+                backgroundCurrentWeapon.color = currentItem == null ? new Color(0, 0, 0, 0) : currentItem.GetItemColor();
             }
             else
             {
-                inventorySlots[i].OnAmmoChanged.RemoveAllListeners();
+                inventorySlots[i].OnCurrentAmmoChanged.RemoveAllListeners();
                 guiInventorySlots[i].SetActiveSlot(false);
             }
         }
@@ -75,22 +81,22 @@ public class GUIInventory : MonoBehaviour
         labelCurrentAmmo.text = ammo.ToString();
     }
 
-    internal void UpdateTotalAmmo(Dictionary<AmmoSO, int> ammoSlots)
-    {
-        if (currentActiveWeapon == null)
-        {
-            return;
-        }
-        if (!ammoSlots.ContainsKey(currentActiveWeapon.weaponAmmo))
-        {
-            return;
-        }
-        labelTotalAmmo.text = ammoSlots[currentActiveWeapon.weaponAmmo].ToString();
-    }
+    //internal void UpdateTotalAmmo(Dictionary<AmmoSO, int> ammoSlots)
+    //{
+    //    if (currentItem == null)
+    //    {
+    //        return;
+    //    }
+    //    if (!ammoSlots.ContainsKey(currentItem.Ammo))
+    //    {
+    //        return;
+    //    }
+    //    labelTotalAmmo.text = ammoSlots[currentItem.Ammo].ToString();
+    //}
 
     internal void UpdateTotalAmmo(InventorySlot slot, int totalAmmo)
     {
-        if (slot.Weapon == null)
+        if ((WeaponSO)slot.Item == null)
         {
             labelTotalAmmo.text = "";
             labelCurrentAmmo.text = "";

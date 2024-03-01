@@ -25,7 +25,7 @@ public class PlayerController : NetworkBehaviour
     private InputAction lookAction;
     private InputAction aimAction;
     private InputAction actionAction;
-    private InputAction switchWeaponAction;
+    private InputAction switchItemAction;
     private InputAction jumpAction;
     private InputAction markerAction;
 
@@ -33,6 +33,8 @@ public class PlayerController : NetworkBehaviour
     private Transform cam;
     private WeaponController weaponController;
     private MarkerController markerController;
+    private InventoryController inventoryController;
+
     [SerializeField] private PlayerPickup playerPickup;
 
     [Header("Animation")]
@@ -57,8 +59,10 @@ public class PlayerController : NetworkBehaviour
     {
         rb = GetComponent<Rigidbody>();
         cam = Camera.main.transform;
+
         weaponController = GetComponent<WeaponController>();
         markerController = GetComponent<MarkerController>();
+        inventoryController = GetComponent<InventoryController>();
 
         moveAction = playerInput.FindAction("Move");
         moveAction.started += OnMovementStarted;
@@ -78,9 +82,9 @@ public class PlayerController : NetworkBehaviour
         actionAction.started += OnActionStarted;
         actionAction.canceled += OnActionStopped;
 
-        switchWeaponAction = playerInput.FindAction("SwitchWeapon");
-        switchWeaponAction.started += OnSwitchWeaponStarted;
-        switchWeaponAction.canceled += OnSwitchWeaponStopped;
+        switchItemAction = playerInput.FindAction("SwitchItem");
+        switchItemAction.started += OnSwitchItemStarted;
+        switchItemAction.canceled += OnSwitchItemStopped;
 
         jumpAction = playerInput.FindAction("Jump");
         jumpAction.started += OnJumpStarted;
@@ -187,12 +191,12 @@ public class PlayerController : NetworkBehaviour
     {
     }
 
-    private void OnSwitchWeaponStarted(InputAction.CallbackContext ctx)
+    private void OnSwitchItemStarted(InputAction.CallbackContext ctx)
     {
-        weaponController.SwitchWeapon(switchWeaponAction.ReadValue<float>());
+        inventoryController.SwitchItem(switchItemAction.ReadValue<float>());
     }
 
-    private void OnSwitchWeaponStopped(InputAction.CallbackContext ctx)
+    private void OnSwitchItemStopped(InputAction.CallbackContext ctx)
     {
     }
 
@@ -212,8 +216,8 @@ public class PlayerController : NetworkBehaviour
     {
         if (weaponController.HasWeaponEquipped())
         {
-            CameraManager.Instance.SetAimCamera(true, weaponController.CurrentWeapon.weaponScopeStrength);
-            GUIManager.Instance.WeaponScope.ShowScope(weaponController.CurrentWeapon.weaponScopeImage);
+            CameraManager.Instance.SetAimCamera(true, weaponController.CurrentWeapon.ScopeStrength);
+            GUIManager.Instance.WeaponScope.ShowScope(weaponController.CurrentWeapon.ScopeSprite);
         }
     }
 
