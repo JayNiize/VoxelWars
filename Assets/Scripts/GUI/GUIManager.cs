@@ -49,7 +49,7 @@ public class GUIManager : MonoBehaviour
 
     public void RegisterWeaponController(WeaponController controller)
     {
-        // this.weaponController.OnCurrentWeaponChange.AddListener()
+        this.weaponController.OnCurrentWeaponSlotChange.AddListener(inventory.UpdateTotalAmmo);
     }
 
     public void RegisterWorldZone(WorldZone worldZone)

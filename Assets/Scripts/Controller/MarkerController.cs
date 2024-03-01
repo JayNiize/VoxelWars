@@ -1,10 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
-public class MarkerController : MonoBehaviour
+public class MarkerController : NetworkBehaviour
 {
     private GameObject tacticalMarker;
+
+    public override void OnNetworkSpawn()
+    {
+        if (!IsOwner)
+        {
+            this.enabled = false;
+        }
+    }
 
     private void Start()
     {

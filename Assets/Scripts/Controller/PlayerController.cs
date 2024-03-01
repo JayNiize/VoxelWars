@@ -3,11 +3,12 @@ using DG.Tweening;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Windows;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : NetworkBehaviour
 {
     [Header("Player Properties")]
     [SerializeField] private float playerSpeed = 5f;
@@ -90,9 +91,18 @@ public class PlayerController : MonoBehaviour
         markerAction.canceled += OnMarkerStopped;
     }
 
+    public override void OnNetworkSpawn()
+    {
+        if (!IsOwner)
+        {
+            this.enabled = false;
+        }
+    }
+
     private void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
+        CameraManager.Instance.RegisterPlayer(cinemachineCameraTarget);
     }
 
     private void Update()

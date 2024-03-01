@@ -1,9 +1,10 @@
 using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
-public class WorldAmmo : MonoBehaviour, IPickupable
+public class WorldAmmo : NetworkBehaviour, IPickupable
 {
     [Header("Weapon")]
     [SerializeField] private AmmoSO ammoSO;

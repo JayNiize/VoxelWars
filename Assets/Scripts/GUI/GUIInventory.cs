@@ -88,6 +88,18 @@ public class GUIInventory : MonoBehaviour
         labelTotalAmmo.text = ammoSlots[currentActiveWeapon.weaponAmmo].ToString();
     }
 
+    internal void UpdateTotalAmmo(InventorySlot slot, int totalAmmo)
+    {
+        if (slot.Weapon == null)
+        {
+            labelTotalAmmo.text = "";
+            labelCurrentAmmo.text = "";
+        }
+
+        labelTotalAmmo.text = slot.Ammo.ToString();
+        labelCurrentAmmo.text = totalAmmo.ToString();
+    }
+
     internal void UpdateReloadSlider(float value)
     {
         sliderReload.value = value;

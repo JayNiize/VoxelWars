@@ -2,9 +2,10 @@ using Cinemachine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Netcode;
 using UnityEngine;
 
-public class WorldEntity : MonoBehaviour, IHitable, IHealth
+public class WorldEntity : NetworkBehaviour, IHitable, IHealth
 {
     [SerializeField] private GameObject destroyedPrefab;
     [SerializeField] private int maxHealth;

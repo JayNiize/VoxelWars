@@ -2,10 +2,11 @@ using DG.Tweening;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class WeaponController : MonoBehaviour
+public class WeaponController : NetworkBehaviour
 {
     private const float BULLET_TRAIL_TIME = 0.1f;
     [SerializeField] private Transform weaponParent;
@@ -24,11 +25,27 @@ public class WeaponController : MonoBehaviour
     private InventorySlot currentSlot;
 
     private InventorySlot CurrentSlot
-    { get { return currentSlot; } set { currentSlot = value; OnCurrentWeaponSlotChange.Invoke(currentSlot); } }
+    {
+        get { return currentSlot; }
+        set
+        {
+            currentSlot = value;
 
-    public UnityEvent<InventorySlot> OnCurrentWeaponSlotChange;
+            OnCurrentWeaponSlotChange.Invoke(currentSlot, inventoryController.GetAmmoAmount(currentSlot.Weapon.weaponAmmo));
+        }
+    }
+
+    public UnityEvent<InventorySlot, int> OnCurrentWeaponSlotChange;
 
     private bool isReloading;
+
+    public override void OnNetworkSpawn()
+    {
+        if (!IsOwner)
+        {
+            this.enabled = false;
+        }
+    }
 
     private void Start()
     {
@@ -71,32 +88,12 @@ public class WeaponController : MonoBehaviour
             tempShootingDuration += Time.deltaTime;
             if (tempShootingDuration >= currentWeapon.weaponSpeed)
             {
-                currentSlot.Ammo--;
+                CurrentSlot.Ammo--;
                 tempShootingDuration = 0;
                 Vector2 screenCenter = new Vector2(Screen.width / 2f, Screen.height / 2f);
                 Ray ray = Camera.main.ScreenPointToRay(screenCenter);
-                RaycastHit hit;
-                Instantiate(PrefabManager.Instance.ParticlesShooting, currentWeaponWorld.GetMuzzlePosition(), Quaternion.LookRotation(ray.direction, Vector3.up));
-                if (Physics.Raycast(ray, out hit, Mathf.Infinity, ~LayerMask.GetMask("Player")))
-                {
-                    Transform bulletTrail = Instantiate(PrefabManager.Instance.TrailBullet, currentWeaponWorld.GetMuzzlePosition(), Quaternion.identity).transform;
-                    bulletTrail.DOMove(hit.point, BULLET_TRAIL_TIME);
-                    Instantiate(PrefabManager.Instance.ParticlesHit, hit.point, Quaternion.identity);
-                    if (hit.transform.TryGetComponent<IHitable>(out IHitable hitable))
-                    {
-                        bool isCritialHit = CalculateCriticalHit();
-                        int damage = (int)(currentWeapon.GetWeaponDamage() * (isCritialHit ? 1.2f : 1f) * UnityEngine.Random.Range(0.95f, 1.05f));
-                        GUIManager.Instance.ScreenActions.SpawnDamageLabel(hit.point, damage.ToString(), isCritialHit);
-                        hitable.Hit(damage, transform);
-                    }
-                }
-                else
-                {
-                    Transform bulletTrail = Instantiate(PrefabManager.Instance.TrailBullet, currentWeaponWorld.GetMuzzlePosition(), Quaternion.identity).transform;
-                    bulletTrail.DOMove(ray.GetPoint(50f), BULLET_TRAIL_TIME);
-                }
-
-                if (currentSlot.Ammo <= 0)
+                RequestShootServerRpc(ray, "JD");
+                if (CurrentSlot.Ammo <= 0)
                 {
                     isReloading = true;
                     StartCoroutine(ReloadWeapon());
@@ -133,10 +130,10 @@ public class WeaponController : MonoBehaviour
             }
         }
         inventoryController.SetCurrentSlotIndex(currentWeaponSlotIndex);
-        currentSlot = inventoryController.GetSlotById(currentWeaponSlotIndex);
-        EquipWeapon(currentSlot.Weapon);
+        CurrentSlot = inventoryController.GetSlotById(currentWeaponSlotIndex);
+        EquipWeapon(CurrentSlot.Weapon);
         StopAllCoroutines();
-        if (currentSlot.Ammo <= 0)
+        if (CurrentSlot.Ammo <= 0)
         {
             StartCoroutine(ReloadWeapon());
         }
@@ -166,12 +163,12 @@ public class WeaponController : MonoBehaviour
         GUIInventory.Instance.UpdateReloadSlider(0);
         if (availableTotalAmmo < currentWeapon.weaponmagazineSize)
         {
-            currentSlot.Ammo = availableTotalAmmo;
+            CurrentSlot.Ammo = availableTotalAmmo;
             inventoryController.RemoveFromInventory(currentWeapon.weaponAmmo, availableTotalAmmo);
         }
         else
         {
-            currentSlot.Ammo = currentWeapon.weaponmagazineSize;
+            CurrentSlot.Ammo = currentWeapon.weaponmagazineSize;
             inventoryController.RemoveFromInventory(currentWeapon.weaponAmmo, currentWeapon.weaponmagazineSize);
         }
         isReloading = false;
@@ -179,6 +176,38 @@ public class WeaponController : MonoBehaviour
 
     internal InventorySlot GetActiveSlot()
     {
-        return currentSlot;
+        return CurrentSlot;
+    }
+
+    [ServerRpc]
+    private void RequestShootServerRpc(Ray ray, string sourcePlayerId)
+    {
+        ShootClientRpc(ray, sourcePlayerId);
+    }
+
+    [ClientRpc]
+    private void ShootClientRpc(Ray ray, string sourcePlayerId)
+    {
+        Debug.Log($"hit from {sourcePlayerId}");
+        RaycastHit hit;
+        Instantiate(PrefabManager.Instance.ParticlesShooting, currentWeaponWorld.GetMuzzlePosition(), Quaternion.LookRotation(ray.direction, Vector3.up));
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, ~LayerMask.GetMask("Player")))
+        {
+            Transform bulletTrail = Instantiate(PrefabManager.Instance.TrailBullet, currentWeaponWorld.GetMuzzlePosition(), Quaternion.identity).transform;
+            bulletTrail.DOMove(hit.point, BULLET_TRAIL_TIME);
+            Instantiate(PrefabManager.Instance.ParticlesHit, hit.point, Quaternion.identity);
+            if (hit.transform.TryGetComponent<IHitable>(out IHitable hitable))
+            {
+                bool isCritialHit = CalculateCriticalHit();
+                int damage = (int)(currentWeapon.GetWeaponDamage() * (isCritialHit ? 1.2f : 1f) * UnityEngine.Random.Range(0.95f, 1.05f));
+                GUIManager.Instance.ScreenActions.SpawnDamageLabel(hit.point, damage.ToString(), isCritialHit);
+                hitable.Hit(damage, transform);
+            }
+        }
+        else
+        {
+            Transform bulletTrail = Instantiate(PrefabManager.Instance.TrailBullet, currentWeaponWorld.GetMuzzlePosition(), Quaternion.identity).transform;
+            bulletTrail.DOMove(ray.GetPoint(50f), BULLET_TRAIL_TIME);
+        }
     }
 }

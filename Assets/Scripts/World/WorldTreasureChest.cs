@@ -1,9 +1,10 @@
 using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
-public class WorldTreasureChest : MonoBehaviour, IActionable
+public class WorldTreasureChest : NetworkBehaviour, IActionable
 {
     [SerializeField] private float openRotation = -140f;
     [SerializeField] private float openDuration = 1f;

@@ -2,10 +2,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class InventoryController : MonoBehaviour
+public class InventoryController : NetworkBehaviour
 {
     [SerializeField] private int inventorySize = 4;
     private WeaponController weaponController;
@@ -23,6 +24,14 @@ public class InventoryController : MonoBehaviour
         for (int i = 0; i < inventorySize; i++)
         {
             inventorySlots.Add(new InventorySlot(i));
+        }
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        if (!IsOwner)
+        {
+            this.enabled = false;
         }
     }
 
