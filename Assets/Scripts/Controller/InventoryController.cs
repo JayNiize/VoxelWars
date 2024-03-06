@@ -133,6 +133,15 @@ public class InventoryController : NetworkBehaviour
         }
     }
 
+    public void RemoveEverything()
+    {
+        foreach (InventorySlot slot in inventorySlots)
+        {
+            slot.Item = null;
+            slot.Ammo = 0;
+        }
+    }
+
     internal void RemoveFromInventory(AmmoSO ammoSO, int ammoAmount)
     {
         if (totalAmmoSlots.ContainsKey(ammoSO))

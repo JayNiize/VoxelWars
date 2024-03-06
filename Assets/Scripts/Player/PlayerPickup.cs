@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
-public class PlayerPickup : MonoBehaviour
+public class PlayerPickup : NetworkBehaviour
 {
     private WeaponController weaponController;
     private InventoryController inventoryController;
@@ -12,6 +13,14 @@ public class PlayerPickup : MonoBehaviour
     {
         weaponController = GetComponentInParent<WeaponController>();
         inventoryController = GetComponentInParent<InventoryController>();
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        if (!IsOwner)
+        {
+            this.enabled = false;
+        }
     }
 
     private void OnTriggerEnter(Collider other)

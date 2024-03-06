@@ -20,6 +20,11 @@ public class WorldTreasureChest : NetworkBehaviour, IActionable
 
     public void ExecuteAction()
     {
+        OpenTreasure();
+    }
+
+    public void OpenTreasure()
+    {
         if (isOpen)
         {
             return;
@@ -36,12 +41,21 @@ public class WorldTreasureChest : NetworkBehaviour, IActionable
 
         for (int i = 0; i < Random.Range(minItemsToDrop, maxItemsToDrop - 1); i++)
         {
-            RarityEnum weaponRarity = LootManager.Instance.CalculateWeaponRarity();
-            List<WeaponSO> possibleWeapons = ItemManager.Instance.GetAllWeaponsByRarity(weaponRarity);
-            WeaponSO weaponToSpawn = possibleWeapons[Random.Range(0, possibleWeapons.Count)];
+            if (UnityEngine.Random.Range(0.00f, 1.00f) > 0.6)
+            {
+                RarityEnum weaponRarity = LootManager.Instance.CalculateWeaponRarity();
+                List<WeaponSO> possibleWeapons = ItemManager.Instance.GetAllWeaponsByRarity(weaponRarity);
+                WeaponSO weaponToSpawn = possibleWeapons[Random.Range(0, possibleWeapons.Count)];
 
-            WorldWeapon worldWeapon = Instantiate(weaponToSpawn.Prefab, transform.position + transform.forward + (transform.right * Random.Range(-2.00f, 2.00f)), Quaternion.identity).GetComponent<WorldWeapon>();
-            worldWeapon.SetWeaponInformation(weaponToSpawn);
+                WorldWeapon worldWeapon = Instantiate(weaponToSpawn.Prefab, transform.position + transform.forward + (transform.right * Random.Range(-2.00f, 2.00f)), Quaternion.identity).GetComponent<WorldWeapon>();
+                worldWeapon.SetWeaponInformation(weaponToSpawn);
+            }
+            else
+            {
+                List<AmmoSO> possibleAmmo = ItemManager.Instance.GetAllAmmo();
+                AmmoSO ammoToSpawn = possibleAmmo[Random.Range(0, possibleAmmo.Count)];
+                Instantiate(ammoToSpawn.ammoPrefab, transform.position + transform.forward + (transform.right * Random.Range(-2.00f, 2.00f)), Quaternion.identity);
+            }
         }
     }
 

@@ -88,7 +88,11 @@ public class WeaponController : NetworkBehaviour
                 tempShootingDuration = currentWeapon.Speed;
                 Vector2 screenCenter = new Vector2(Screen.width / 2f, Screen.height / 2f);
                 Ray ray = Camera.main.ScreenPointToRay(screenCenter);
-                RequestShootServerRpc(ray, "JD");
+
+                bool isCriticalHit = CalculateCriticalHit();
+                int damage = (int)(currentWeapon.GetWeaponDamage() * (isCriticalHit ? 1.2f : 1f) * UnityEngine.Random.Range(0.95f, 1.05f));
+
+                RequestShootServerRpc(ray, "JD", damage, isCriticalHit);
                 if (inventoryController.GetCurrentSlot().Ammo <= 0)
                 {
                     isReloading = true;
@@ -145,18 +149,17 @@ public class WeaponController : NetworkBehaviour
         isReloading = false;
     }
 
-    [ServerRpc]
-    private void RequestShootServerRpc(Ray ray, string sourcePlayerId)
+    [Rpc(SendTo.Server)]
+    private void RequestShootServerRpc(Ray ray, string sourcePlayerId, int damage, bool isCriticalHit)
     {
-        ShootClientRpc(ray, sourcePlayerId);
+        ShootClientRpc(ray, sourcePlayerId, damage, isCriticalHit);
     }
 
-    [ClientRpc]
-    private void ShootClientRpc(Ray ray, string sourcePlayerId)
+    [Rpc(SendTo.ClientsAndHost)]
+    private void ShootClientRpc(Ray ray, string sourcePlayerId, int damage, bool isCriticalHit)
     {
-        RaycastHit hit;
         Instantiate(PrefabManager.Instance.ParticlesShooting, currentWeaponWorld.GetMuzzlePosition(), Quaternion.LookRotation(ray.direction, Vector3.up));
-        if (Physics.Raycast(ray, out hit, Mathf.Infinity, ~LayerMask.GetMask("Player")))
+        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, ~LayerMask.GetMask("Player")))
         {
             Debug.Log($"hit from {sourcePlayerId}");
             Transform bulletTrail = Instantiate(PrefabManager.Instance.TrailBullet, currentWeaponWorld.GetMuzzlePosition(), Quaternion.identity).transform;
@@ -164,9 +167,7 @@ public class WeaponController : NetworkBehaviour
             Instantiate(PrefabManager.Instance.ParticlesHit, hit.point, Quaternion.identity);
             if (hit.transform.TryGetComponent<IHitable>(out IHitable hitable))
             {
-                bool isCritialHit = CalculateCriticalHit();
-                int damage = (int)(currentWeapon.GetWeaponDamage() * (isCritialHit ? 1.2f : 1f) * UnityEngine.Random.Range(0.95f, 1.05f));
-                GUIManager.Instance.ScreenActions.SpawnDamageLabel(hit.point, damage.ToString(), isCritialHit);
+                GUIManager.Instance.ScreenActions.SpawnDamageLabel(hit.point, damage.ToString(), isCriticalHit);
                 hitable.Hit(damage, transform);
             }
         }

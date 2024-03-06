@@ -22,11 +22,14 @@ public class SpawnPointManager : NetworkBehaviour
         }
     }
 
-    public Vector3 GetSpawnPosition()
+    public Vector3 GetSpawnPosition(bool removeSpawnPosition = true)
     {
         int index = Random.Range(0, possibleSpawnPoints.Count);
         Vector3 pos = possibleSpawnPoints[index];
-        possibleSpawnPoints.RemoveAt(index);
+        if (removeSpawnPosition)
+        {
+            possibleSpawnPoints.RemoveAt(index);
+        }
         return pos;
     }
 }

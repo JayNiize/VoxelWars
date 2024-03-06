@@ -55,6 +55,9 @@ public class PlayerController : NetworkBehaviour
 
     private float _cinemachineTargetPitch;
 
+    //Settings
+    private float settingsMouseSensitivity = 1f;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -107,6 +110,7 @@ public class PlayerController : NetworkBehaviour
     {
         Cursor.lockState = CursorLockMode.Locked;
         CameraManager.Instance.RegisterPlayer(cinemachineCameraTarget);
+        settingsMouseSensitivity = 1f + PlayerPrefs.GetFloat(SettingsManager.MOUSE_SPEED);
     }
 
     private void Update()
@@ -162,22 +166,26 @@ public class PlayerController : NetworkBehaviour
 
     private void OnMovementStarted(InputAction.CallbackContext ctx)
     {
+        if (!IsOwner) return;
         anim.SetBool("IsWalking", true);
     }
 
     private void OnMovementStopped(InputAction.CallbackContext ctx)
     {
+        if (!IsOwner) return;
         anim.SetBool("IsWalking", false);
     }
 
     private void OnAttackStarted(InputAction.CallbackContext ctx)
     {
+        if (!IsOwner) return;
         isShooting = true;
         anim.SetBool("IsShooting", true);
     }
 
     private void OnAttackStopped(InputAction.CallbackContext ctx)
     {
+        if (!IsOwner) return;
         isShooting = false;
         anim.SetBool("IsShooting", false);
     }
@@ -251,8 +259,8 @@ public class PlayerController : NetworkBehaviour
             //Don't multiply mouse input by Time.deltaTime;
             float deltaTimeMultiplier = 1.0f;
 
-            _cinemachineTargetYaw += _input.x * deltaTimeMultiplier;
-            _cinemachineTargetPitch += _input.y * deltaTimeMultiplier;
+            _cinemachineTargetYaw += _input.x * deltaTimeMultiplier * settingsMouseSensitivity;
+            _cinemachineTargetPitch += _input.y * deltaTimeMultiplier * settingsMouseSensitivity;
         }
 
         // clamp our rotations so our values are limited 360 degrees

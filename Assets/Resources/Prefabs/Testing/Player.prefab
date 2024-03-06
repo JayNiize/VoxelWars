@@ -314,7 +314,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 2303906466
+  GlobalObjectIdHash: 1826212181
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -406,6 +406,8 @@ MonoBehaviour:
   OnCurrentHealthChange:
     m_PersistentCalls:
       m_Calls: []
+  meshRenderer: {fileID: 6698439259700616157}
+  col: {fileID: 6058944653952003486}
 --- !u!114 &9075604961468785934
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1061,6 +1063,12 @@ Animator:
 --- !u!4 &5581932787330479963 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: c32219788a5d5324e9b5c8c4c1fb6648,
+    type: 3}
+  m_PrefabInstance: {fileID: 5403680971911139504}
+  m_PrefabAsset: {fileID: 0}
+--- !u!23 &6698439259700616157 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -7635826562936255635, guid: c32219788a5d5324e9b5c8c4c1fb6648,
     type: 3}
   m_PrefabInstance: {fileID: 5403680971911139504}
   m_PrefabAsset: {fileID: 0}

@@ -28,6 +28,9 @@ public class Player : NetworkBehaviour, IHealth, IHitable
     public WeaponController WeaponController
     { get { return weaponController; } }
 
+    [SerializeField] private MeshRenderer meshRenderer;
+    [SerializeField] private BoxCollider col;
+
     public static Player Instance;
 
     private void Awake()
@@ -66,12 +69,30 @@ public class Player : NetworkBehaviour, IHealth, IHitable
         CurrentHealth -= health;
         if (CurrentHealth <= 0)
         {
-            Debug.Log("you deeead boiii :(");
+            CurrentHealth = MaxHealth;
+            inventoryController.RemoveEverything();
+            StartCoroutine(SavePlayerAfterDeath());
         }
+    }
+
+    private IEnumerator SavePlayerAfterDeath()
+    {
+        meshRenderer.enabled = false;
+        col.enabled = false;
+        yield return new WaitForSeconds(3);
+        transform.position = SpawnPointManager.Instance.GetSpawnPosition(false);
+        meshRenderer.enabled = true;
+        col.enabled = true;
     }
 
     public void Hit(int damage, Transform hitSource)
     {
-        throw new System.NotImplementedException();
+        HitClientRpc(damage);
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    private void HitClientRpc(int damage)
+    {
+        RemoveHealth(damage);
     }
 }

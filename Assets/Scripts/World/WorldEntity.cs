@@ -39,6 +39,12 @@ public class WorldEntity : NetworkBehaviour, IHitable, IHealth
 
     public void RemoveHealth(int health)
     {
+        RemoveHealthClientRpc(health);
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    private void RemoveHealthClientRpc(int health)
+    {
         CurrentHealth -= health;
         if (CurrentHealth <= 0)
         {
