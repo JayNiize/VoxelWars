@@ -16,13 +16,13 @@ public class LootManager : MonoBehaviour
         }
     }
 
-    public WeaponRarity CalculateWeaponRarity()
+    public RarityEnum CalculateWeaponRarity()
     {
-        List<WeaponRarityWeight> weights = Enum.GetValues(typeof(WeaponRarityWeight)).Cast<WeaponRarityWeight>().OrderByDescending(x => x).ToList();
+        List<RarityWeight> weights = Enum.GetValues(typeof(RarityWeight)).Cast<RarityWeight>().OrderByDescending(x => x).ToList();
 
         int randomNumber = UnityEngine.Random.Range(0, weights.Select(x => (int)x).Sum());
         Debug.Log(randomNumber);
-        foreach (WeaponRarityWeight weight in weights)
+        foreach (RarityWeight weight in weights)
         {
             if (randomNumber <= (int)weight)
             {
@@ -30,6 +30,6 @@ public class LootManager : MonoBehaviour
             }
             randomNumber -= (int)weight;
         }
-        return WeaponRarity.DEFAULT;
+        return RarityEnum.NORMAL;
     }
 }

@@ -6,6 +6,7 @@ using UnityEngine;
 public class ItemManager : MonoBehaviour
 {
     private List<WeaponSO> weaponList = new List<WeaponSO>();
+    private List<AmmoSO> ammoList = new List<AmmoSO>();
     public static ItemManager Instance;
 
     private void Awake()
@@ -19,6 +20,7 @@ public class ItemManager : MonoBehaviour
     private void Start()
     {
         weaponList = Resources.LoadAll<WeaponSO>("Models/Items/Weapons").ToList();
+        ammoList = Resources.LoadAll<AmmoSO>("Models/Items/Ammo").ToList();
         Debug.Log($"Loaded {weaponList.Count} weapons");
     }
 
@@ -27,8 +29,13 @@ public class ItemManager : MonoBehaviour
         return weaponList;
     }
 
-    public List<WeaponSO> GetAllWeaponsByRarity(WeaponRarity weaponRarity)
+    public List<WeaponSO> GetAllWeaponsByRarity(RarityEnum weaponRarity)
     {
-        return weaponList.Where(x => x.weaponRarity == weaponRarity).ToList();
+        return weaponList.Where(x => x.Rarity == weaponRarity).ToList();
+    }
+
+    public List<AmmoSO> GetAllAmmo()
+    {
+        return ammoList;
     }
 }

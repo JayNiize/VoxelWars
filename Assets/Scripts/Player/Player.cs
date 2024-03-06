@@ -1,9 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class Player : MonoBehaviour, IHealth, IHitable
+public class Player : NetworkBehaviour, IHealth, IHitable
 {
     private int maxHealth = 100;
 
@@ -27,6 +28,9 @@ public class Player : MonoBehaviour, IHealth, IHitable
     public WeaponController WeaponController
     { get { return weaponController; } }
 
+    [SerializeField] private MeshRenderer meshRenderer;
+    [SerializeField] private BoxCollider col;
+
     public static Player Instance;
 
     private void Awake()
@@ -38,6 +42,15 @@ public class Player : MonoBehaviour, IHealth, IHitable
         CurrentHealth = MaxHealth;
         inventoryController = GetComponent<InventoryController>();
         weaponController = GetComponent<WeaponController>();
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        gameObject.layer = IsOwner ? 3 : 8;
+        if (!IsOwner)
+        {
+            this.enabled = false;
+        }
     }
 
     private void Start()
@@ -56,12 +69,30 @@ public class Player : MonoBehaviour, IHealth, IHitable
         CurrentHealth -= health;
         if (CurrentHealth <= 0)
         {
-            Debug.Log("you deeead boiii :(");
+            CurrentHealth = MaxHealth;
+            inventoryController.RemoveEverything();
+            StartCoroutine(SavePlayerAfterDeath());
         }
+    }
+
+    private IEnumerator SavePlayerAfterDeath()
+    {
+        meshRenderer.enabled = false;
+        col.enabled = false;
+        yield return new WaitForSeconds(3);
+        transform.position = SpawnPointManager.Instance.GetSpawnPosition(false);
+        meshRenderer.enabled = true;
+        col.enabled = true;
     }
 
     public void Hit(int damage, Transform hitSource)
     {
-        throw new System.NotImplementedException();
+        HitClientRpc(damage);
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    private void HitClientRpc(int damage)
+    {
+        RemoveHealth(damage);
     }
 }

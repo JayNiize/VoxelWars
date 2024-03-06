@@ -1,10 +1,11 @@
 using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class WorldWeapon : MonoBehaviour, IPickupable
+public class WorldWeapon : NetworkBehaviour, IPickupable
 {
     [Header("Weapon")]
     [SerializeField] private WeaponSO weaponSO;
@@ -52,7 +53,6 @@ public class WorldWeapon : MonoBehaviour, IPickupable
     public void ExecuteAction()
     {
         Player.Instance.InventoryController.AddToInventory(weaponSO);
-        Player.Instance.WeaponController.SwitchWeapon(0, true);
 
         Destroy(gameObject);
     }

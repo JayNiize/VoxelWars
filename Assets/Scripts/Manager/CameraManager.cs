@@ -45,4 +45,10 @@ public class CameraManager : MonoBehaviour
     {
         minimapCamera.transform.position = new Vector3(pos.x, defaultMinimapCameraY, pos.z);
     }
+
+    public void RegisterPlayer(Transform target)
+    {
+        aimCamera.Follow = target;
+        thirdPersonCamera.Follow = target;
+    }
 }

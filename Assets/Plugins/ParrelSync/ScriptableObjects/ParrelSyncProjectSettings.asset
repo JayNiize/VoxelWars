@@ -9,8 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f02d2975d383ac0479e9accdefa54ce3, type: 3}
-  m_Name: Grenade
+  m_Script: {fileID: 11500000, guid: c0011418c9d75434988a06b6df93b283, type: 3}
+  m_Name: ParrelSyncProjectSettings
   m_EditorClassIdentifier: 
-  ammoName: Grenade
-  ammoSprite: {fileID: 0}
+  m_OptionalSymbolicLinkFolders: []

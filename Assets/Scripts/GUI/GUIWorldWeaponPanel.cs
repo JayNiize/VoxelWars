@@ -22,9 +22,9 @@ public class GUIWorldWeaponPanel : MonoBehaviour
 
     public void Setup(WeaponSO weaponSO)
     {
-        panel.color = weaponSO.GetWeaponColor();
-        labelActionKey.color = weaponSO.GetWeaponColor();
-        labelName.text = weaponSO.weaponName;
+        panel.color = weaponSO.GetItemColor();
+        labelActionKey.color = weaponSO.GetItemColor();
+        labelName.text = weaponSO.Name;
         weaponInfoCanvas.worldCamera = CameraManager.Instance.GetMainCamera();
     }
 

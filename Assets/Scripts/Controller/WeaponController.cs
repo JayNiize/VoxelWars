@@ -2,10 +2,11 @@ using DG.Tweening;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class WeaponController : MonoBehaviour
+public class WeaponController : NetworkBehaviour
 {
     private const float BULLET_TRAIL_TIME = 0.1f;
     [SerializeField] private Transform weaponParent;
@@ -15,20 +16,20 @@ public class WeaponController : MonoBehaviour
     public WeaponSO CurrentWeapon
     { get { return currentWeapon; } }
 
-    private int currentWeaponSlotIndex = 0;
-
-    private float tempShootingDuration;
+    private float tempShootingDuration = -1;
     private float tempReloadDuration;
     private WorldWeaponInHand currentWeaponWorld;
     private InventoryController inventoryController;
-    private InventorySlot currentSlot;
-
-    private InventorySlot CurrentSlot
-    { get { return currentSlot; } set { currentSlot = value; OnCurrentWeaponSlotChange.Invoke(currentSlot); } }
-
-    public UnityEvent<InventorySlot> OnCurrentWeaponSlotChange;
 
     private bool isReloading;
+
+    public override void OnNetworkSpawn()
+    {
+        if (!IsOwner)
+        {
+            this.enabled = false;
+        }
+    }
 
     private void Start()
     {
@@ -37,9 +38,21 @@ public class WeaponController : MonoBehaviour
 
     public void EquipWeapon(WeaponSO weaponSO)
     {
+        if (inventoryController.GetCurrentSlot().Ammo <= 0)
+        {
+            isReloading = true;
+            StopAllCoroutines();
+            StartCoroutine(ReloadWeapon());
+        }
+        else
+        {
+            tempShootingDuration = -1f;
+            isReloading = false;
+        }
+
         if (weaponParent.childCount > 0)
         {
-            for (int i = 0; i < weaponParent.childCount; i++)
+            for (int i = 0; i < weaponParent.childCount - 1; i++)
             {
                 Destroy(weaponParent.GetChild(i).gameObject);
             }
@@ -50,7 +63,7 @@ public class WeaponController : MonoBehaviour
             currentWeapon = null;
             return;
         }
-        GameObject go = Instantiate(weaponSO.weaponPrefab, weaponParent.transform);
+        GameObject go = Instantiate(weaponSO.Prefab, weaponParent.transform);
 
         currentWeaponWorld = go.AddComponent<WorldWeaponInHand>();
         currentWeaponWorld.transform.localPosition = Vector3.zero;
@@ -68,35 +81,19 @@ public class WeaponController : MonoBehaviour
     {
         if (currentWeapon != null && !isReloading)
         {
-            tempShootingDuration += Time.deltaTime;
-            if (tempShootingDuration >= currentWeapon.weaponSpeed)
+            tempShootingDuration -= Time.deltaTime;
+            if (tempShootingDuration <= 0)
             {
-                currentSlot.Ammo--;
-                tempShootingDuration = 0;
+                inventoryController.GetCurrentSlot().Ammo--;
+                tempShootingDuration = currentWeapon.Speed;
                 Vector2 screenCenter = new Vector2(Screen.width / 2f, Screen.height / 2f);
                 Ray ray = Camera.main.ScreenPointToRay(screenCenter);
-                RaycastHit hit;
-                Instantiate(PrefabManager.Instance.ParticlesShooting, currentWeaponWorld.GetMuzzlePosition(), Quaternion.LookRotation(ray.direction, Vector3.up));
-                if (Physics.Raycast(ray, out hit, Mathf.Infinity, ~LayerMask.GetMask("Player")))
-                {
-                    Transform bulletTrail = Instantiate(PrefabManager.Instance.TrailBullet, currentWeaponWorld.GetMuzzlePosition(), Quaternion.identity).transform;
-                    bulletTrail.DOMove(hit.point, BULLET_TRAIL_TIME);
-                    Instantiate(PrefabManager.Instance.ParticlesHit, hit.point, Quaternion.identity);
-                    if (hit.transform.TryGetComponent<IHitable>(out IHitable hitable))
-                    {
-                        bool isCritialHit = CalculateCriticalHit();
-                        int damage = (int)(currentWeapon.GetWeaponDamage() * (isCritialHit ? 1.2f : 1f) * UnityEngine.Random.Range(0.95f, 1.05f));
-                        GUIManager.Instance.ScreenActions.SpawnDamageLabel(hit.point, damage.ToString(), isCritialHit);
-                        hitable.Hit(damage, transform);
-                    }
-                }
-                else
-                {
-                    Transform bulletTrail = Instantiate(PrefabManager.Instance.TrailBullet, currentWeaponWorld.GetMuzzlePosition(), Quaternion.identity).transform;
-                    bulletTrail.DOMove(ray.GetPoint(50f), BULLET_TRAIL_TIME);
-                }
 
-                if (currentSlot.Ammo <= 0)
+                bool isCriticalHit = CalculateCriticalHit();
+                int damage = (int)(currentWeapon.GetWeaponDamage() * (isCriticalHit ? 1.2f : 1f) * UnityEngine.Random.Range(0.95f, 1.05f));
+
+                RequestShootServerRpc(ray, "JD", damage, isCriticalHit);
+                if (inventoryController.GetCurrentSlot().Ammo <= 0)
                 {
                     isReloading = true;
                     StartCoroutine(ReloadWeapon());
@@ -116,39 +113,13 @@ public class WeaponController : MonoBehaviour
         return currentWeapon != null;
     }
 
-    internal void SwitchWeapon(float v, bool onPickup = false)
-    {
-        if (!onPickup)
-        {
-            currentWeaponSlotIndex += (v < 0) ? 1 : -1;
-
-            if (currentWeaponSlotIndex >= inventoryController.GetInventorySize())
-            {
-                currentWeaponSlotIndex = 0;
-            }
-
-            if (currentWeaponSlotIndex < 0)
-            {
-                currentWeaponSlotIndex = inventoryController.GetInventorySize() - 1;
-            }
-        }
-        inventoryController.SetCurrentSlotIndex(currentWeaponSlotIndex);
-        currentSlot = inventoryController.GetSlotById(currentWeaponSlotIndex);
-        EquipWeapon(currentSlot.Weapon);
-        StopAllCoroutines();
-        if (currentSlot.Ammo <= 0)
-        {
-            StartCoroutine(ReloadWeapon());
-        }
-    }
-
     public IEnumerator ReloadWeapon()
     {
         if (currentWeapon == null)
         {
             yield break;
         }
-        int availableTotalAmmo = inventoryController.GetAmmoAmount(currentWeapon.weaponAmmo);
+        int availableTotalAmmo = inventoryController.GetTotalAmmo(currentWeapon.AmmoType);
         if (availableTotalAmmo <= 0)
         {
             Debug.Log("No Ammo");
@@ -156,29 +127,54 @@ public class WeaponController : MonoBehaviour
         }
         Debug.Log("Reload");
         float tempTime = 0;
-        while (tempTime < currentWeapon.weaponReloadTime)
+        while (tempTime < currentWeapon.ReloadTime)
         {
             tempTime += Time.deltaTime;
-            GUIInventory.Instance.UpdateReloadSlider(tempTime / currentWeapon.weaponReloadTime);
+            GUIInventory.Instance.UpdateReloadSlider(tempTime / currentWeapon.ReloadTime);
             yield return new WaitForEndOfFrame();
         }
 
         GUIInventory.Instance.UpdateReloadSlider(0);
-        if (availableTotalAmmo < currentWeapon.weaponmagazineSize)
+        if (availableTotalAmmo < currentWeapon.MagazineSize)
         {
-            currentSlot.Ammo = availableTotalAmmo;
-            inventoryController.RemoveFromInventory(currentWeapon.weaponAmmo, availableTotalAmmo);
+            inventoryController.GetCurrentSlot().Ammo = availableTotalAmmo;
+            inventoryController.RemoveFromInventory(currentWeapon.AmmoType, availableTotalAmmo);
         }
         else
         {
-            currentSlot.Ammo = currentWeapon.weaponmagazineSize;
-            inventoryController.RemoveFromInventory(currentWeapon.weaponAmmo, currentWeapon.weaponmagazineSize);
+            inventoryController.GetCurrentSlot().Ammo = currentWeapon.MagazineSize;
+            inventoryController.RemoveFromInventory(currentWeapon.AmmoType, currentWeapon.MagazineSize);
         }
+        inventoryController.OnInventorySlotChanged.Invoke(inventoryController.GetInventorySlots(), inventoryController.GetCurrentSlot().SlotId, inventoryController.GetTotalAmmo(currentWeapon.AmmoType));
         isReloading = false;
     }
 
-    internal InventorySlot GetActiveSlot()
+    [Rpc(SendTo.Server)]
+    private void RequestShootServerRpc(Ray ray, string sourcePlayerId, int damage, bool isCriticalHit)
     {
-        return currentSlot;
+        ShootClientRpc(ray, sourcePlayerId, damage, isCriticalHit);
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    private void ShootClientRpc(Ray ray, string sourcePlayerId, int damage, bool isCriticalHit)
+    {
+        Instantiate(PrefabManager.Instance.ParticlesShooting, currentWeaponWorld.GetMuzzlePosition(), Quaternion.LookRotation(ray.direction, Vector3.up));
+        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, ~LayerMask.GetMask("Player")))
+        {
+            Debug.Log($"hit from {sourcePlayerId}");
+            Transform bulletTrail = Instantiate(PrefabManager.Instance.TrailBullet, currentWeaponWorld.GetMuzzlePosition(), Quaternion.identity).transform;
+            bulletTrail.DOMove(hit.point, BULLET_TRAIL_TIME);
+            Instantiate(PrefabManager.Instance.ParticlesHit, hit.point, Quaternion.identity);
+            if (hit.transform.TryGetComponent<IHitable>(out IHitable hitable))
+            {
+                GUIManager.Instance.ScreenActions.SpawnDamageLabel(hit.point, damage.ToString(), isCriticalHit);
+                hitable.Hit(damage, transform);
+            }
+        }
+        else
+        {
+            Transform bulletTrail = Instantiate(PrefabManager.Instance.TrailBullet, currentWeaponWorld.GetMuzzlePosition(), Quaternion.identity).transform;
+            bulletTrail.DOMove(ray.GetPoint(50f), BULLET_TRAIL_TIME);
+        }
     }
 }

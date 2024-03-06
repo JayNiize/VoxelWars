@@ -2,64 +2,89 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class InventoryController : MonoBehaviour
+public class InventoryController : NetworkBehaviour
 {
-    [SerializeField] private int inventorySize = 4;
+    private const int INVENTORY_SIZE = 4;
     private WeaponController weaponController;
+
     private List<InventorySlot> inventorySlots = new List<InventorySlot>();
-    private Dictionary<AmmoSO, int> ammoSlots = new Dictionary<AmmoSO, int>();
+    private Dictionary<AmmoSO, int> totalAmmoSlots = new Dictionary<AmmoSO, int>();
+
+    private int currentInventorySlotIndex = 0;
 
     public UnityEvent<List<InventorySlot>> OnItemAddedToInventory;
     public UnityEvent<List<InventorySlot>> OnItemRemovedInventory;
-    public UnityEvent<List<InventorySlot>, int> OnInventorySlotChanged;
+    public UnityEvent<List<InventorySlot>, int, int> OnInventorySlotChanged;
     public UnityEvent<Dictionary<AmmoSO, int>> OnAmmoAddedToInventory;
 
     private void Awake()
     {
         weaponController = GetComponent<WeaponController>();
-        for (int i = 0; i < inventorySize; i++)
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        if (!IsOwner)
         {
-            inventorySlots.Add(new InventorySlot(i));
+            this.enabled = false;
         }
     }
 
     private void Start()
     {
+        for (int i = 0; i < INVENTORY_SIZE; i++)
+        {
+            inventorySlots.Add(new InventorySlot(i));
+        }
         GUIManager.Instance.RegisterInventoryController(this);
+        OnInventorySlotChanged.Invoke(inventorySlots, currentInventorySlotIndex, 0);
     }
 
-    public int GetAmmo(WeaponSO weapon)
+    public void SwitchItem(float value)
     {
-        InventorySlot foundSlot = inventorySlots.Where(x => x.Weapon == weapon).FirstOrDefault();
-        return foundSlot != null ? foundSlot.Ammo : 0;
+        currentInventorySlotIndex += (value < 0) ? 1 : -1;
+
+        if (currentInventorySlotIndex >= INVENTORY_SIZE)
+        {
+            currentInventorySlotIndex = 0;
+        }
+
+        if (currentInventorySlotIndex < 0)
+        {
+            currentInventorySlotIndex = INVENTORY_SIZE - 1;
+        }
+
+        InventorySlot CurrentSlot = inventorySlots[currentInventorySlotIndex];
+        if (CurrentSlot.Item != null)
+            weaponController.EquipWeapon((WeaponSO)CurrentSlot.Item);
+
+        OnInventorySlotChanged.Invoke(inventorySlots, currentInventorySlotIndex, CurrentSlot.Item == null ? 0 : GetTotalAmmo(((WeaponSO)CurrentSlot.Item).AmmoType));
     }
 
     public void AddToInventory(WeaponSO weapon)
     {
-        if (inventorySlots.Where(x => x.Weapon == null).Count() == 0)
+        if (inventorySlots.Where(x => x.Item == null).Count() == 0)
         {
             Debug.Log("Inventory is full");
             return;
         }
 
-        InventorySlot foundSlot = inventorySlots.Where(x => x.Weapon == weapon).FirstOrDefault();
-        if (foundSlot != null)
+        InventorySlot freeSlot = inventorySlots.Where(x => x.Item == null).FirstOrDefault();
+        if (freeSlot != null)
         {
-            foundSlot.Ammo += weapon.weaponmagazineSize;
-        }
-        else
-        {
-            foundSlot = inventorySlots.Where(x => x.Weapon == null).First();
-            foundSlot.Weapon = weapon;
-            foundSlot.Ammo = weapon.weaponmagazineSize;
+            freeSlot = inventorySlots.Where(x => x.Item == null).FirstOrDefault();
+            freeSlot.Item = weapon;
+            freeSlot.Ammo = weapon.MagazineSize;
         }
 
-        if (inventorySlots.Where(x => x.Weapon != null).Count() == 1)
+        if (freeSlot == GetCurrentSlot())
         {
             weaponController.EquipWeapon(weapon);
+            OnInventorySlotChanged.Invoke(inventorySlots, currentInventorySlotIndex, freeSlot.Item == null ? 0 : GetTotalAmmo(((WeaponSO)freeSlot.Item).AmmoType));
         }
 
         OnItemAddedToInventory.Invoke(inventorySlots);
@@ -67,87 +92,92 @@ public class InventoryController : MonoBehaviour
 
     public void AddToInventory(AmmoSO ammo, int amount)
     {
-        if (ammoSlots.ContainsKey(ammo))
+        if (totalAmmoSlots.ContainsKey(ammo))
         {
-            ammoSlots[ammo] += amount;
+            totalAmmoSlots[ammo] += amount;
         }
         else
         {
-            ammoSlots.Add(ammo, amount);
+            totalAmmoSlots.Add(ammo, amount);
         }
-        if (weaponController.GetActiveSlot().Ammo <= 0)
+        if (GetCurrentAmmo() <= 0)
         {
             StartCoroutine(weaponController.ReloadWeapon());
         }
-        OnAmmoAddedToInventory.Invoke(ammoSlots);
+        OnAmmoAddedToInventory.Invoke(totalAmmoSlots);
     }
 
-    public int GetAmmoAmount(AmmoSO ammo)
+    public List<InventorySlot> GetInventorySlots()
     {
-        if (!ammoSlots.ContainsKey(ammo))
-        {
-            return 0;
-        }
-        return ammoSlots[ammo];
+        return inventorySlots;
+    }
+
+    public int GetCurrentAmmo()
+    {
+        return inventorySlots[currentInventorySlotIndex].Ammo;
+    }
+
+    public int GetTotalAmmo(AmmoSO ammo)
+    {
+        return !totalAmmoSlots.ContainsKey(ammo) ? 0 : totalAmmoSlots[ammo];
     }
 
     public void RemoveFromInventory(WeaponSO weapon)
     {
-        InventorySlot foundSlot = inventorySlots.Where(x => x.Weapon == weapon).FirstOrDefault();
+        InventorySlot foundSlot = inventorySlots.Where(x => x.Item == weapon).FirstOrDefault();
         if (foundSlot != null)
         {
-            foundSlot.Weapon = null;
+            foundSlot.Item = null;
             foundSlot.Ammo = 0;
             OnItemRemovedInventory.Invoke(inventorySlots);
         }
     }
 
-    public int GetInventorySize()
+    public void RemoveEverything()
     {
-        return inventorySize;
-    }
-
-    public InventorySlot GetSlotById(int id)
-    {
-        return inventorySlots[id];
-    }
-
-    internal void SetCurrentSlotIndex(int currentWeaponSlotIndex)
-    {
-        OnInventorySlotChanged.Invoke(inventorySlots, currentWeaponSlotIndex);
+        foreach (InventorySlot slot in inventorySlots)
+        {
+            slot.Item = null;
+            slot.Ammo = 0;
+        }
     }
 
     internal void RemoveFromInventory(AmmoSO ammoSO, int ammoAmount)
     {
-        if (ammoSlots.ContainsKey(ammoSO))
+        if (totalAmmoSlots.ContainsKey(ammoSO))
         {
-            ammoSlots[ammoSO] -= ammoAmount;
-            OnAmmoAddedToInventory.Invoke(ammoSlots);
+            totalAmmoSlots[ammoSO] -= ammoAmount;
+            OnAmmoAddedToInventory.Invoke(totalAmmoSlots);
         }
+    }
+
+    internal InventorySlot GetCurrentSlot()
+    {
+        return inventorySlots[currentInventorySlotIndex];
     }
 }
 
 public class InventorySlot
 {
     private int slotId;
-    private WeaponSO weapon;
+    private ItemSO item;
     private int ammo;
 
-    public UnityEvent<int> OnAmmoChanged = new UnityEvent<int>();
+    public UnityEvent<int> OnCurrentAmmoChanged = new UnityEvent<int>();
 
     public int SlotId
     { get { return slotId; } set { slotId = value; } }
 
-    public WeaponSO Weapon
-    { get { return weapon; } set { weapon = value; } }
+    public ItemSO Item
+    { get { return item; } set { item = value; } }
 
     public int Ammo
-    { get { return ammo; } set { ammo = value; OnAmmoChanged.Invoke(ammo); } }
+    { get { return ammo; } set { ammo = value; OnCurrentAmmoChanged.Invoke(ammo); } }
 
-    public InventorySlot(int slotId, WeaponSO weapon = null, int ammo = 0)
+    public InventorySlot(int slotId, ItemSO item = null, int ammo = 0)
     {
         this.slotId = slotId;
-        this.weapon = weapon;
+        this.item = item;
         this.ammo = ammo;
     }
 }

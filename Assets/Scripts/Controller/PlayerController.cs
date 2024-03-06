@@ -3,11 +3,12 @@ using DG.Tweening;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Windows;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : NetworkBehaviour
 {
     [Header("Player Properties")]
     [SerializeField] private float playerSpeed = 5f;
@@ -24,7 +25,7 @@ public class PlayerController : MonoBehaviour
     private InputAction lookAction;
     private InputAction aimAction;
     private InputAction actionAction;
-    private InputAction switchWeaponAction;
+    private InputAction switchItemAction;
     private InputAction jumpAction;
     private InputAction markerAction;
 
@@ -32,6 +33,8 @@ public class PlayerController : MonoBehaviour
     private Transform cam;
     private WeaponController weaponController;
     private MarkerController markerController;
+    private InventoryController inventoryController;
+
     [SerializeField] private PlayerPickup playerPickup;
 
     [Header("Animation")]
@@ -52,12 +55,17 @@ public class PlayerController : MonoBehaviour
 
     private float _cinemachineTargetPitch;
 
+    //Settings
+    private float settingsMouseSensitivity = 1f;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
         cam = Camera.main.transform;
+
         weaponController = GetComponent<WeaponController>();
         markerController = GetComponent<MarkerController>();
+        inventoryController = GetComponent<InventoryController>();
 
         moveAction = playerInput.FindAction("Move");
         moveAction.started += OnMovementStarted;
@@ -77,9 +85,9 @@ public class PlayerController : MonoBehaviour
         actionAction.started += OnActionStarted;
         actionAction.canceled += OnActionStopped;
 
-        switchWeaponAction = playerInput.FindAction("SwitchWeapon");
-        switchWeaponAction.started += OnSwitchWeaponStarted;
-        switchWeaponAction.canceled += OnSwitchWeaponStopped;
+        switchItemAction = playerInput.FindAction("SwitchItem");
+        switchItemAction.started += OnSwitchItemStarted;
+        switchItemAction.canceled += OnSwitchItemStopped;
 
         jumpAction = playerInput.FindAction("Jump");
         jumpAction.started += OnJumpStarted;
@@ -90,9 +98,19 @@ public class PlayerController : MonoBehaviour
         markerAction.canceled += OnMarkerStopped;
     }
 
+    public override void OnNetworkSpawn()
+    {
+        if (!IsOwner)
+        {
+            this.enabled = false;
+        }
+    }
+
     private void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
+        CameraManager.Instance.RegisterPlayer(cinemachineCameraTarget);
+        settingsMouseSensitivity = 1f + PlayerPrefs.GetFloat(SettingsManager.MOUSE_SPEED);
     }
 
     private void Update()
@@ -148,22 +166,26 @@ public class PlayerController : MonoBehaviour
 
     private void OnMovementStarted(InputAction.CallbackContext ctx)
     {
+        if (!IsOwner) return;
         anim.SetBool("IsWalking", true);
     }
 
     private void OnMovementStopped(InputAction.CallbackContext ctx)
     {
+        if (!IsOwner) return;
         anim.SetBool("IsWalking", false);
     }
 
     private void OnAttackStarted(InputAction.CallbackContext ctx)
     {
+        if (!IsOwner) return;
         isShooting = true;
         anim.SetBool("IsShooting", true);
     }
 
     private void OnAttackStopped(InputAction.CallbackContext ctx)
     {
+        if (!IsOwner) return;
         isShooting = false;
         anim.SetBool("IsShooting", false);
     }
@@ -177,12 +199,12 @@ public class PlayerController : MonoBehaviour
     {
     }
 
-    private void OnSwitchWeaponStarted(InputAction.CallbackContext ctx)
+    private void OnSwitchItemStarted(InputAction.CallbackContext ctx)
     {
-        weaponController.SwitchWeapon(switchWeaponAction.ReadValue<float>());
+        inventoryController.SwitchItem(switchItemAction.ReadValue<float>());
     }
 
-    private void OnSwitchWeaponStopped(InputAction.CallbackContext ctx)
+    private void OnSwitchItemStopped(InputAction.CallbackContext ctx)
     {
     }
 
@@ -202,8 +224,8 @@ public class PlayerController : MonoBehaviour
     {
         if (weaponController.HasWeaponEquipped())
         {
-            CameraManager.Instance.SetAimCamera(true, weaponController.CurrentWeapon.weaponScopeStrength);
-            GUIManager.Instance.WeaponScope.ShowScope(weaponController.CurrentWeapon.weaponScopeImage);
+            CameraManager.Instance.SetAimCamera(true, weaponController.CurrentWeapon.ScopeStrength);
+            GUIManager.Instance.WeaponScope.ShowScope(weaponController.CurrentWeapon.ScopeSprite);
         }
     }
 
@@ -237,8 +259,8 @@ public class PlayerController : MonoBehaviour
             //Don't multiply mouse input by Time.deltaTime;
             float deltaTimeMultiplier = 1.0f;
 
-            _cinemachineTargetYaw += _input.x * deltaTimeMultiplier;
-            _cinemachineTargetPitch += _input.y * deltaTimeMultiplier;
+            _cinemachineTargetYaw += _input.x * deltaTimeMultiplier * settingsMouseSensitivity;
+            _cinemachineTargetPitch += _input.y * deltaTimeMultiplier * settingsMouseSensitivity;
         }
 
         // clamp our rotations so our values are limited 360 degrees

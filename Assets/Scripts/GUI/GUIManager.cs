@@ -19,7 +19,6 @@ public class GUIManager : MonoBehaviour
 
     private Player player;
     private InventoryController inventoryController;
-    private WeaponController weaponController;
     private WorldZone worldZone;
 
     public static GUIManager Instance;
@@ -44,12 +43,7 @@ public class GUIManager : MonoBehaviour
         this.inventoryController.OnItemAddedToInventory.AddListener(inventory.UpdateInventory);
         this.inventoryController.OnItemRemovedInventory.AddListener(inventory.UpdateInventory);
         this.inventoryController.OnInventorySlotChanged.AddListener(inventory.UpdateInventorySlots);
-        this.inventoryController.OnAmmoAddedToInventory.AddListener(inventory.UpdateTotalAmmo);
-    }
-
-    public void RegisterWeaponController(WeaponController controller)
-    {
-        // this.weaponController.OnCurrentWeaponChange.AddListener()
+        //this.inventoryController.OnAmmoAddedToInventory.AddListener(inventory.UpdateTotalAmmo);
     }
 
     public void RegisterWorldZone(WorldZone worldZone)
